@@ -14,103 +14,176 @@ db = mysql.connector.connect(
     database=os.getenv("MYSQL_DATABASE")
 )
 
-athlete_ids = {}
-city_ids = {}
-sport_ids = {}
-event_ids = {}
-medal_type_ids = {}
-edition_ids = {}
-team_ids = {}
-membership_ids = {}
+class ConsistentTable:
+    def __init__(self, db):
+        self.db = db
+        self.cursor = db.cursor()
+        self.cache = {}
 
-def create_athlete(id, name, sex):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `athletes` (`athleteId`, `name`, `sex`) VALUES (%s, %s, %s)',
-        (id, name, sex)
-    )
-    db.commit()
-    cursor.close()
+    def get_or_insert(self, data):
+        key = self.make_key(data)
+        cached = self.cache.get(key)
 
-    return id
+        if cached:
+            self.ensure_values_match(data, cached)
+            return cached
 
-def create_city(name):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `cities` (`name`) VALUES (%s)',
-        (name,)
-    )
-    db.commit()
-    cursor.close()
+        self.cache[key] = self.insert(data);
 
-    return cursor.lastrowid
+        return self.cache[key]    
+    
+    def ensure_values_match(self, base, reference):
+        for key, value in base.items():
+            if reference.get(key) != value:
+                raise ValueError(f'Value mismatch for key {key}: {value} != {reference.get(key)}. (Base: {base}, Reference: {reference})')
+                
+class AthleteTable(ConsistentTable):
+    def make_key(self, data):
+        return data['id']
 
-def create_sport(name):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `sports` (`name`) VALUES (%s)',
-        (name,)
-    )
-    db.commit()
-    cursor.close()
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `athletes` (`athleteId`, `name`, `sex`) VALUES (%s, %s, %s)',
+            (data['id'], data['name'], data['sex'])
+        )
+        self.db.commit()
 
-    return cursor.lastrowid
+        return {
+            'id': data['id'],
+            'name': data['name'],
+            'sex': data['sex']
+        }
+    
+class CityTable(ConsistentTable):
+    def make_key(self, data):
+        return data['name']
 
-def create_event(name, sport_id):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `events` (`name`, `sportId`) VALUES (%s, %s)',
-        (name, sport_id)
-    )
-    db.commit()
-    cursor.close()
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `cities` (`name`) VALUES (%s)',
+            (data['name'],)
+        )
+        self.db.commit()
 
-    return cursor.lastrowid
+        return {
+            'id': self.cursor.lastrowid,
+            'name': data['name']
+        }
+    
+class SportTable(ConsistentTable):
+    def make_key(self, data):
+        return data['name']
 
-def create_medal_type(name):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `medalTypes` (`name`) VALUES (%s)',
-        (name,)
-    )
-    db.commit()
-    cursor.close()
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `sports` (`name`) VALUES (%s)',
+            (data['name'],)
+        )
+        self.db.commit()
 
-    return cursor.lastrowid
+        return {
+            'id': self.cursor.lastrowid,
+            'name': data['name']
+        }
+    
+class EventTable(ConsistentTable):
+    def make_key(self, data):
+        return (data['name'], data['sport_id'])
 
-def create_edition(year, season, title, city_id):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `editions` (`year`, `season`, title, `cityId`) VALUES (%s, %s, %s, %s)',
-        (year, season, title, city_id)
-    )
-    db.commit()
-    cursor.close()
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `events` (`name`, `sportId`) VALUES (%s, %s)',
+            (data['name'], data['sport_id'])
+        )
+        self.db.commit()
 
-    return cursor.lastrowid
+        return {
+            'id': self.cursor.lastrowid,
+            'name': data['name'],
+            'sport_id': data['sport_id']
+        }
+    
+class MedalTypeTable(ConsistentTable):
+    def make_key(self, data):
+        return data['name']
 
-def create_team(name, edition_id, event_id, medal_type_id):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `teams` (`name`, `editionId`, `eventId`, `medalTypeId`) VALUES (%s, %s, %s, %s)',
-        (name, edition_id, event_id, medal_type_id)
-    )
-    db.commit()
-    cursor.close()
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `medalTypes` (`name`) VALUES (%s)',
+            (data['name'],)
+        )
+        self.db.commit()
 
-    return cursor.lastrowid
+        return {
+            'id': self.cursor.lastrowid,
+            'name': data['name']
+        }
 
-def create_membership(athlete_id, team_id, age, height, weight):
-    cursor = db.cursor()
-    cursor.execute(
-        f'INSERT INTO `memberships` (`athleteId`, `teamId`, `age`, `height`, `weight`) VALUES (%s, %s, %s, %s, %s)',
-        (athlete_id, team_id, age, height, weight)
-    )
-    db.commit()
-    cursor.close()
+class EditionTable(ConsistentTable):
+    def make_key(self, data):
+        return (data['year'], data['season'])
 
-    return (athlete_id, team_id)
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `editions` (`year`, `season`, title, `cityId`) VALUES (%s, %s, %s, %s)',
+            (data['year'], data['season'], data['title'], data['city_id'])
+        )
+        self.db.commit()
 
+        return {
+            'id': self.cursor.lastrowid,
+            'year': data['year'],
+            'season': data['season'],
+            'title': data['title'],
+            'city_id': data['city_id']
+        }
+    
+class TeamTable(ConsistentTable):
+    def make_key(self, data):
+        return (data['name'], data['edition_id'], data['event_id'], data['medal_type_id'])
+
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `teams` (`name`, `editionId`, `eventId`, `medalTypeId`) VALUES (%s, %s, %s, %s)',
+            (data['name'], data['edition_id'], data['event_id'], data['medal_type_id'])
+        )
+        self.db.commit()
+
+        return {
+            'id': self.cursor.lastrowid,
+            'name': data['name'],
+            'edition_id': data['edition_id'],
+            'event_id': data['event_id'],
+            'medal_type_id': data['medal_type_id']
+        }
+    
+class MembershipTable(ConsistentTable):
+    def make_key(self, data):
+        return (data['athlete_id'], data['team_id'])
+
+    def insert(self, data):
+        self.cursor.execute(
+            f'INSERT INTO `memberships` (`athleteId`, `teamId`, `age`, `height`, `weight`) VALUES (%s, %s, %s, %s, %s)',
+            (data['athlete_id'], data['team_id'], data['age'], data['height'], data['weight'])
+        )
+        self.db.commit()
+
+        return {
+            'athlete_id': data['athlete_id'],
+            'team_id': data['team_id'],
+            'age': data['age'],
+            'height': data['height'],
+            'weight': data['weight']
+        }
+
+athlete_table = AthleteTable(db)
+city_table = CityTable(db)
+sport_table = SportTable(db)
+event_table = EventTable(db)
+medal_type_table = MedalTypeTable(db)
+edition_table = EditionTable(db)
+team_table = TeamTable(db)
+membership_table = MembershipTable(db)
 
 with open('data/athlete_events.csv') as file:
     reader = csv.reader(file, delimiter=',', quotechar='"')
@@ -152,42 +225,47 @@ with open('data/athlete_events.csv') as file:
         if line_noc != 'GBR':
             continue
 
-        athelete_id = athlete_ids.get(line_id)
-        city_id = city_ids.get(line_city)
-        sport_id = sport_ids.get(line_sport)
-        event_id = event_ids.get((line_event, line_sport))
-        medal_type_id = medal_type_ids.get(line_medal)
-        edition_id = edition_ids.get((line_year, line_season))
-        team_id = team_ids.get((line_team, line_year, line_season, line_sport, line_event))
-        membership_id = membership_ids.get((line_id, line_team, line_year, line_season, line_sport, line_event))
+        athlete = athlete_table.get_or_insert({
+            'id': line_id,
+            'name': line_name,
+            'sex': line_sex
+        })
+        
+        city = city_table.get_or_insert({
+            'name': line_city
+        });
+        
+        sport = sport_table.get_or_insert({
+            'name': line_sport
+        });
+        
+        event = event_table.get_or_insert({
+            'name': line_event,
+            'sport_id': sport['id']
+        });
+        
+        medal_type = medal_type_table.get_or_insert({
+            'name': line_medal
+        }) if line_medal != 'NA' else None;
+        
+        edition = edition_table.get_or_insert({
+            'year': line_year,
+            'season': line_season,
+            'title': line_games,
+            'city_id': city['id']
+        });
+        
+        team = team_table.get_or_insert({
+            'name': line_team,
+            'edition_id': edition['id'],
+            'event_id': event['id'],
+            'medal_type_id': medal_type['id'] if medal_type else None
+        });
 
-        if not athelete_id:
-            athelete_id = create_athlete(line_id, line_name, line_sex)
-            athlete_ids[line_id] = athelete_id
-
-        if not city_id:
-            city_id = create_city(line_city)
-            city_ids[line_city] = city_id
-
-        if not sport_id:
-            sport_id = create_sport(line_sport)
-            sport_ids[line_sport] = sport_id
-
-        if not event_id:
-            event_id = create_event(line_event, sport_id)
-            event_ids[(line_event, line_sport)] = event_id
-
-        if not medal_type_id and line_medal != 'NA':
-            medal_type_id = create_medal_type(line_medal)
-            medal_type_ids[line_medal] = medal_type_id
-
-        if not edition_id:
-            edition_id = create_edition(line_year, line_season, line_games, city_id)
-            edition_ids[(line_year, line_season)] = edition_id
-
-        if not team_id:
-            team_id = create_team(line_team, edition_id, event_id, medal_type_id)
-            team_ids[(line_team, line_year, line_season, line_sport, line_event)] = team_id
-
-        if not membership_id:
-            membership_ids[(line_id, line_team, line_year, line_season, line_sport, line_event)] = create_membership(athelete_id, team_id, line_age, line_height, line_weight)
+        membership_table.get_or_insert({
+            'athlete_id': athlete['id'],
+            'team_id': team['id'],
+            'age': line_age,
+            'height': line_height,
+            'weight': line_weight
+        });
