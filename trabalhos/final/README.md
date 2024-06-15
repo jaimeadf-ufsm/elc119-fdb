@@ -2,6 +2,7 @@
 
 ## 1FN
 Result (**ID**, Name, Sex, Age, Height, Weight, **Team**, **NOC**, Games, **Year**, **Season**, City, **Sport**, **Event**, Medal)
+![1FN](./models/olimpiadas_inicial.png)
 
 ## 2FN e 3FN
 
@@ -12,6 +13,7 @@ Result (**ID**, Name, Sex, Age, Height, Weight, **Team**, **NOC**, Games, **Year
 - Member(**ID**, **Season**, **Year**, **Sport**, **Event**, **Name**, Age, Height, Weight
     - **ID** referencia Athlete
     - (**Season**, **Year**, **Sport**, **Event**, **Name**) referencia Team
+![2FN](./models/olimpiadas_2fn.png)
 
 
 ### Dependências funcionais
@@ -39,3 +41,4 @@ Result (**ID**, Name, Sex, Age, Height, Weight, **Team**, **NOC**, Games, **Year
 - Member(**athleteId**, **teamId**, age, height, weight)
     - **athleteId** referencia Athlete
     - **teamId** referencia Team
+![Final](./models/olimpiadas_final.png)
