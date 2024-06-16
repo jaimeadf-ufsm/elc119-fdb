@@ -5,65 +5,93 @@ Trabalho desenvolvido por:
  - Guilherme Meneghetti Einloft
  - Luís Gustavo Werle Tozevich
 
-## Problemas
-
-Durante o processo de normalização, identificamos a presença de dados duplicados na tabela original. Inicialmente, supôs-se que isso poderia ser um erro no banco de dados. No entanto, percebemos que se tratava da mesma pessoa ganhando a mesma medalha na mesma edição, evento e modalidade dos Jogos Olímpicos. Este fenômeno ocorre devido às práticas das antigas Olimpíadas, onde várias rodadas da mesma modalidade e esporte podiam ocorrer, todas válidas para a concessão de medalhas naquela edição específica dos Jogos. Um exemplo destacado pode ser visto [aqui](https://en.wikipedia.org/wiki/William_Exshaw) Portanto, para resolver essa questão, optamos por utilizar apenas um índice como chave primária na tabela da primeira forma normal, pois todos os outros campos podem ser idênticos.
-
- Além disso, durante a análise dos dados, observamos casos em que o mesmo atleta recebeu medalhas diferentes na mesma modalidade esportiva e na mesma edição dos Jogos Olímpicos. Um exemplo disso pode ser visto na Olimpíada de 1900, conforme detalhado [aqui](https://no.wikipedia.org/wiki/Algernon_Maudsley#Referanser).
-
-Exemplo dos dados encontrados na tabela:
-```
-"33564","William Edgar Exshaw","M",34,NA,NA,"Olle","GBR","1900 Summer",1900,"Summer","Paris","Sailing","Sailing Mixed 2-3 Ton","Gold"
-"33564","William Edgar Exshaw","M",34,NA,NA,"Olle","GBR","1900 Summer",1900,"Summer","Paris","Sailing","Sailing Mixed 2-3 Ton","Gold"
-```
-![medals_example](images/medals.png)
-
-Além disso, identificamos situações em que diferentes edições dos Jogos Olímpicos ocorreram em cidades distintas para o mesmo esporte. Para resolver essa questão, associamos cada modalidade esportiva à cidade correspondente, assegurando uma representação precisa das localizações dos eventos esportivos.
-
 ## Introdução
 
-Este documento descreve o processo de criação e normalização de um banco de dados de Jogos Olímpicos, detalhando as etapas realizadas para transformar a tabela original em um modelo final. A fonte dos dados foi a tabela athlete_events, retirada do site [kaggle](https://www.kaggle.com/datasets/heesoo37/120-years-of-olympic-history-athletes-and-results), estamos utilizando somente os valores referentes à Grã-Bretanha (Great Britain).
+Este documento descreve o processo de criação e normalização de um banco de dados de Jogos Olímpicos, detalhando as etapas realizadas para transformar a tabela original em um modelo final. A fonte dos dados foi a tabela "athlete_events", retirada do site [kaggle](https://www.kaggle.com/datasets/heesoo37/120-years-of-olympic-history-athletes-and-results) e filtrada para somente exibir os valores referentes à Grã-Bretanha, isto é, com "NOC" igual à "GRB".
 
 Foram identificadas e organizadas informações de um total de 6281 atletas distintos representando a Grã-Bretanha, os quais participaram das Olimpíadas ao longo de diversas edições.
 
+## Problemas
+
+Durante o processo de normalização, identificamos a presença de dados duplicados na tabela original. Inicialmente, supôs-se que isso poderia ser um erro em nossa fonte. No entanto, percebemos que se tratava da mesma pessoa ganhando a mesma medalha na mesma edição, no mesmo esporte e na mesma modalidade. Este fenômeno ocorre devido a certas práticas em Jogos Olímpicos antigos, onde podiam ocorrer várias rodadas da mesma modalidade esportiva, todas válidas para a concessão de medalhas naquela edição específica. Um exemplo desse problema pode ser visto na enciclopédia do atleta [William Exshaw](https://en.wikipedia.org/wiki/William_Exshaw). Desse modo, para resolver essa questão, optamos por utilizar um índice como chave primária na tabela da primeira forma normal, pois todos os outros campos podem ser idênticos.
+
+<p align="center">
+    <img alt="Duplicidade de Medalhas" src="images/medals.png">
+</p>
+
+A duplicidade pode ser observada nas seguintes linhas da tabela:
+
+```csv
+"33564","William Edgar Exshaw","M",34,NA,NA,"Olle","GBR","1900 Summer",1900,"Summer","Paris","Sailing","Sailing Mixed 2-3 Ton","Gold"
+"33564","William Edgar Exshaw","M",34,NA,NA,"Olle","GBR","1900 Summer",1900,"Summer","Paris","Sailing","Sailing Mixed 2-3 Ton","Gold"
+```
+
+Além disso, identificamos situações em que a mesma edição dos Jogos Olímpicos ocorreu em cidades distintas. As [olímpiadas de verão de 1956](https://en.wikipedia.org/wiki/1956_Summer_Olympics), por exemplo, ocorreram em Melbourne, Austrália, e Estocolmo, Suécia. Isso foi resolvido associando uma cidade para cada par edição e esporte, assegurando uma representação precisa das localizações dos eventos esportivos.
+
 ## Normalização
 
-## 1FN
+### 1FN e 2FN
 
-Esta foi a tabela retirada do site [kaggle](https://www.kaggle.com/datasets/heesoo37/120-years-of-olympic-history-athletes-and-results).
-A partir dessa tabela que realizamos as demais alterações e o processo de normalização para a 2FN e 3FN.
+Construímos o nosso modelo a partir da tabela retirada do site [kaggle](https://www.kaggle.com/datasets/heesoo37/120-years-of-olympic-history-athletes-and-results), adicionando uma coluna "Index" para resolver a duplicidade descrita anteriormente. A coluna "NOC" foi utilizada para filtrar os atletas que representam a Grã-Bretanha e, logo, foi retirada da 1FN.
 
-- Result(<u>Index</u>, ID, Name, Sex, Age, Height, Weight, Team, NOC, Games, Year, Season, City, Sport, Event, Medal)
+#### Abordagem relacional
 
-![1FN](./models/olimpiada_1fn.png)
+- Result(<u>Index</u>, ID, Name, Sex, Age, Height, Weight, Team, Games, Year, Season, City, Sport, Event, Medal)
 
-## 3FN
+#### Diagrama ER
 
-Para alcançar a 3FN, identificamos as dependências transitivas e decompusemos a tabela original em tabelas menores que eliminam redundâncias. Essas dependencias podem ser vistas em [dependências transtivas](#dependências-transitivas).
+<p align="center">
+    <img alt="Diagrama 1FN" src="images/1fn.png" height=300>
+</p>
 
-![3FN](./models/olimpiada_3fn.png)
+### 3FN
 
-### Dependências transitivas
+Para alcançar a 3FN, decompusemos a tabela original em tabelas menores que eliminam redundâncias com base nas dependências transitivas identificadas abaixo:
 
-Durante o processo de normalização do banco de dados dos Jogos Olímpicos da Grã-Bretanha, identificamos diversas dependências transitivas que orientaram a decomposição da tabela original em estruturas mais eficientes e sem redundâncias. Inicialmente, observamos que o ID único de cada atleta determina seu nome, sexo, altura e peso. Além disso, analisamos que a combinação de ano e temporada determina o número de jogos realizados (Games), enquanto a inclusão do esporte acrescenta a informação da cidade onde esses eventos ocorreram. Outra dependência identificada foi a relação entre o ID do atleta, o ano, a temporada, o esporte e o evento, que determina a equipe em que o atleta competiu.
+- ID -> Name, Sex, Height, Weight
+- Year, Season -> Games
+- Year, Season, Sport -> City
+- ID, Season, Year -> Age
+- ID, Year, Season, Sport, Event -> Team
 
-- ID $\rightarrow$  Name, Sex, Height, Weight
-- Year, Season $\rightarrow$ Games
-- Year, Season, Sport $\rightarrow$ City
-- ID, Season, Year $\rightarrow$ Age
-- ID, Year, Season, Sport, Event $\rightarrow$ Team
+#### Abordagem relacional
+
+- Athlete(<u>ID</u>, Name, Sex, Height, Weight)
+
+- Edition(<u>Year</u>, <u>Season</u>)
+
+- Competitor(<u>ID</u>, <u>Year</u>, <u>Season</u>)
+    - ID referencia Athlete
+    - (Year, Season) referenciam Edition
+
+- Game(<u>Year</u>, <u>Season</u>, <u>Sport</u>, City)
+    - (Year, Season) referenciam Edition
+
+- Member(<u>ID</u>, <u>Year</u>, <u>Season</u>, <u>Sport</u>, <u>Event</u>, Team)
+    - ID referencia Athlete
+    - Year, Season, Sport referenciam Game
+
+- Result(<u>Index</u>, ID, Year, Season, Sport, Event, Medal)
+    - (ID, Year, Season, Sport, Event) referenciam Member
+
+#### Diagrama ER
+
+<p align="center">
+    <img alt="Diagrama 3FN" src="images/3fn.png" height=300>
+</p>
 
 ## Modelo final
 
-No modelo final, o banco de dados foi decomposto em tabelas independentes, cada uma representando uma entidade específica, e as relações entre essas entidades foram definidas.
+No modelo final, o banco de dados foi decomposto em várias tabelas independentes com o uso de identificadores artificiais para facilitar a criação de consultas e a aplicação de mudanças no modelo.
 
-![Final](./models/olimpiada_final.png)
+A tabela "athletes" armazena informações básicas sobre os atletas, incluindo a identificação extraída da tabela original, nome, sexo, altura e peso. As cidades que sediaram os jogos são registradas na tabela "cities", enquanto os diferentes esportes são listados na tabela "sports". As modalidades de cada esporte foram especificadas na tabela "events".
 
-## Considerações Finais
+A tabela "medals" define os tipos de medalhas que podem ser conquistadas, como ouro, prata e bronze. As diferentes edições dos Jogos Olímpicos são documentadas na tabela "editions", que inclui o ano, a estação (verão ou inverno) e o título da edição.
 
-A normalização do banco de dados visou melhorar a integridade e a eficiência na armazenagem dos dados, eliminando redundâncias e garantindo que as relações entre os dados fossem preservadas de maneira clara e eficiente. Facilitando consultas e análises sobre os Jogos Olímpicos e os atletas da Grã-Bretanha.
+A tabela "games" é central para a ligação entre edições, esportes e cidades, relacionando onde cada esporte ocorreu numa determinada edição. Os atletas que competiram em alguma edição dos Jogos Olímpicos são listados na tabela "competitors", que também registra a idade dos atletas durante a competição.
 
+A tabela "members" detalha a participação dos atletas em modalides esportivas específicas dentro de cada jogo, incluindo o nome da equipe pela qual competiram. Finalmente, a tabela "results" armazena os resultados das competições, ligando atletas, jogos e modalidades esportivas com as medalhas conquistadas.
 
-
-
-
+<p align="center">
+    <img alt="Diagrama Final" src="images/final.png" height=500>
+</p>
