@@ -5,7 +5,9 @@ USE olympics;
 CREATE TABLE athletes (
     athleteId INT NOT NULL,
     name TEXT NOT NULL,
-    sex CHAR(1) NOT NULL,
+    sex CHAR(1),
+    height DECIMAL(5, 2) NULL,
+    weight DECIMAL(5, 2) NULL,
     PRIMARY KEY (athleteId)
 );
 
@@ -29,7 +31,7 @@ CREATE TABLE events (
     FOREIGN KEY (sportId) REFERENCES sports(sportId)
 );
 
-CREATE TABLE medalTypes (
+CREATE TABLE medals (
     medalId INT NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
     PRIMARY KEY (medalId)
@@ -40,30 +42,43 @@ CREATE TABLE editions (
     year INT NOT NULL,
     season TEXT NOT NULL,
     title TEXT NOT NULL,
+    PRIMARY KEY (editionId)
+);
+
+CREATE TABLE games (
+    gameId INT NOT NULL AUTO_INCREMENT,
+    editionId INT NOT NULL,
+    eventId INT NOT NULL,
     cityId INT NOT NULL,
-    PRIMARY KEY (editionId),
+    PRIMARY KEY (gameId),
+    FOREIGN KEY (editionId) REFERENCES editions(editionId),
+    FOREIGN KEY (eventId) REFERENCES events(eventId),
     FOREIGN KEY (cityId) REFERENCES cities(cityId)
 );
 
-CREATE TABLE teams (
-    teamId INT NOT NULL AUTO_INCREMENT,
-    name TEXT NOT NULL,
-    editionId INT NOT NULL,
-    eventId INT NOT NULL,
-    medalTypeId INT NULL,
-    PRIMARY KEY (teamId),
-    FOREIGN KEY (editionId) REFERENCES editions(editionId),
-    FOREIGN KEY (eventId) REFERENCES events(eventId),
-    FOREIGN KEY (medalTypeId) REFERENCES medalTypes(medalId)
+CREATE TABLE results (
+    resultId INT NOT NULL AUTO_INCREMENT,
+    team TEXT NOT NULL,
+    gameId INT NOT NULL,
+    medalId INT NULL,
+    PRIMARY KEY (resultId),
+    FOREIGN KEY (gameId) REFERENCES games(gameId),
+    FOREIGN KEY (medalId) REFERENCES medals(medalId)
 );
 
-CREATE TABLE memberships (
+CREATE TABLE competitors (
     athleteId INT NOT NULL,
-    teamId INT NOT NULL,
+    editionId INT NOT NULL,
     age INT NULL,
-    height DECIMAL(5,2) NULL,
-    weight DECIMAL(5,2) NULL,
-    PRIMARY KEY (athleteId, teamId),
+    PRIMARY KEY (athleteId, editionId),
     FOREIGN KEY (athleteId) REFERENCES athletes(athleteId),
-    FOREIGN KEY (teamId) REFERENCES teams(teamId)
+    FOREIGN KEY (editionId) REFERENCES editions(editionId)
+);
+
+CREATE TABLE participants (
+    athleteId INT NOT NULL,
+    resultId INT NOT NULL,
+    PRIMARY KEY (athleteId, resultId),
+    FOREIGN KEY (athleteId) REFERENCES athletes(athleteId),
+    FOREIGN KEY (resultId) REFERENCES results(resultId)
 );
