@@ -48,22 +48,12 @@ CREATE TABLE editions (
 CREATE TABLE games (
     gameId INT NOT NULL AUTO_INCREMENT,
     editionId INT NOT NULL,
-    eventId INT NOT NULL,
+    sportId INT NOT NULL,
     cityId INT NOT NULL,
     PRIMARY KEY (gameId),
     FOREIGN KEY (editionId) REFERENCES editions(editionId),
-    FOREIGN KEY (eventId) REFERENCES events(eventId),
+    FOREIGN KEY (sportId) REFERENCES sports(sportId),
     FOREIGN KEY (cityId) REFERENCES cities(cityId)
-);
-
-CREATE TABLE results (
-    resultId INT NOT NULL AUTO_INCREMENT,
-    team TEXT NOT NULL,
-    gameId INT NOT NULL,
-    medalId INT NULL,
-    PRIMARY KEY (resultId),
-    FOREIGN KEY (gameId) REFERENCES games(gameId),
-    FOREIGN KEY (medalId) REFERENCES medals(medalId)
 );
 
 CREATE TABLE competitors (
@@ -75,10 +65,23 @@ CREATE TABLE competitors (
     FOREIGN KEY (editionId) REFERENCES editions(editionId)
 );
 
-CREATE TABLE participants (
+CREATE TABLE members (
     athleteId INT NOT NULL,
-    resultId INT NOT NULL,
-    PRIMARY KEY (athleteId, resultId),
+    gameId INT NOT NULL,
+    eventId INT NOT NULL,
+    team TEXT NOT NULL,
+    PRIMARY KEY (athleteId, gameId, eventId),
     FOREIGN KEY (athleteId) REFERENCES athletes(athleteId),
-    FOREIGN KEY (resultId) REFERENCES results(resultId)
+    FOREIGN KEY (gameId) REFERENCES games(gameId),
+    FOREIGN KEY (eventId) REFERENCES events(eventId)
+);
+
+CREATE TABLE results (
+    resultId INT NOT NULL,
+    athleteId INT NOT NULL,
+    gameId INT NOT NULL,
+    eventId INT NOT NULL,
+    medalId INT NULL,
+    PRIMARY KEY (resultId),
+    FOREIGN KEY (athleteId, gameId, eventId) REFERENCES members(athleteId, gameId, eventId)
 );

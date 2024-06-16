@@ -39,12 +39,12 @@ class ConsistentTable:
 
 class AthleteTable(ConsistentTable):
     def make_key(self, data):
-        return data['id']
+        return data['athleteId']
 
     def insert(self, data):
         self.cursor.execute(
             'INSERT INTO athletes(athleteId, name, sex, height, weight) VALUES(%s, %s, %s, %s, %s)',
-            (data['id'], data['name'], data['sex'], data['height'], data['weight'])
+            (data['athleteId'], data['name'], data['sex'], data['height'], data['weight'])
         )
         self.db.commit()
 
@@ -62,7 +62,7 @@ class CityTable(ConsistentTable):
         self.db.commit()
 
         return {
-            'id': self.cursor.lastrowid,
+            'cityId': self.cursor.lastrowid,
             **data
         }
     
@@ -78,7 +78,7 @@ class SportTable(ConsistentTable):
         self.db.commit()
 
         return {
-            'id': self.cursor.lastrowid,
+            'sportId': self.cursor.lastrowid,
             **data
         }
 
@@ -94,7 +94,7 @@ class EventTable(ConsistentTable):
         self.db.commit()
 
         return {
-            'id': self.cursor.lastrowid,
+            'eventId': self.cursor.lastrowid,
             **data
         }
 
@@ -110,7 +110,7 @@ class MedalTable(ConsistentTable):
         self.db.commit()
 
         return {
-            'id': self.cursor.lastrowid,
+            'medalId': self.cursor.lastrowid,
             **data
         }
     
@@ -126,41 +126,38 @@ class EditionTable(ConsistentTable):
         self.db.commit()
 
         return {
-            'id': self.cursor.lastrowid,
+            'editionId': self.cursor.lastrowid,
             **data
         }
 
 class GameTable(ConsistentTable):
     def make_key(self, data):
-        return (data['editionId'], data['eventId'], data['cityId'])
+        return (data['editionId'], data['sportId'], data['cityId'])
 
     def insert(self, data):
         self.cursor.execute(
-            'INSERT INTO games(editionId, eventId, cityId) VALUES(%s, %s, %s)',
-            (data['editionId'], data['eventId'], data['cityId'])
+            'INSERT INTO games(editionId, sportId, cityId) VALUES(%s, %s, %s)',
+            (data['editionId'], data['sportId'], data['cityId'])
         )
         self.db.commit()
 
         return {
-            'id': self.cursor.lastrowid,
+            'gameId': self.cursor.lastrowid,
             **data
         }
 
 class ResultTable(ConsistentTable):
     def make_key(self, data):
-        return (data['team'], data['gameId'], data['medalId'])
+        return data['resultId']
 
     def insert(self, data):
         self.cursor.execute(
-            'INSERT INTO results(team, gameId, medalId) VALUES(%s, %s, %s)',
-            (data['team'], data['gameId'], data['medalId'])
+            'INSERT INTO results(resultId, athleteId, gameId, eventId, medalId) VALUES(%s, %s, %s, %s, %s)',
+            (data['resultId'], data['athleteId'], data['gameId'], data['eventId'], data['medalId'])
         )
         self.db.commit()
 
-        return {
-            'id': self.cursor.lastrowid,
-            **data
-        }
+        return data
 
 class CompetitorTable(ConsistentTable):
     def make_key(self, data):
@@ -175,14 +172,14 @@ class CompetitorTable(ConsistentTable):
 
         return data
 
-class ParticipantTable(ConsistentTable):
+class MemberTable(ConsistentTable):
     def make_key(self, data):
-        return (data['athleteId'], data['resultId'])
+        return (data['athleteId'], data['gameId'], data['eventId'])
 
     def insert(self, data):
         self.cursor.execute(
-            'INSERT INTO participants(athleteId, resultId) VALUES(%s, %s)',
-            (data['athleteId'], data['resultId'])
+            'INSERT INTO members(athleteId, gameId, eventId, team) VALUES(%s, %s, %s, %s)',
+            (data['athleteId'], data['gameId'], data['eventId'], data['team'])
         )
         self.db.commit()
 
@@ -195,13 +192,12 @@ event_table = EventTable(db)
 medal_table = MedalTable(db)
 edition_table = EditionTable(db)
 game_table = GameTable(db)
-result_table = ResultTable(db)
 competitor_table = CompetitorTable(db)
-participant_table = ParticipantTable(db)
+result_table = ResultTable(db)
+member_table = MemberTable(db)
 
 with open('data/athlete_events.csv') as file:
     reader = csv.reader(file, delimiter=',', quotechar='"')
-    lines = list()
 
     for index, row in enumerate(reader):
         if index == 0:
@@ -222,13 +218,13 @@ with open('data/athlete_events.csv') as file:
         row_sport = row[12]
         row_event = row[13]
         row_medal = row[14]
-
+        
         if row_noc != 'GBR':
             continue
 
         try:
             athlete = athlete_table.get_or_insert({
-                'id': row_id,
+                'athleteId': row_id,
                 'name': row_name,
                 'sex': row_sex,
                 'height': row_height,
@@ -244,7 +240,7 @@ with open('data/athlete_events.csv') as file:
             })
 
             event = event_table.get_or_insert({
-                'sportId': sport['id'],
+                'sportId': sport['sportId'],
                 'name': row_event
             })
 
@@ -259,26 +255,30 @@ with open('data/athlete_events.csv') as file:
             })
 
             game = game_table.get_or_insert({
-                'editionId': edition['id'],
-                'eventId': event['id'],
-                'cityId': city['id']
-            })
-
-            result = result_table.get_or_insert({
-                'team': row_team,
-                'gameId': game['id'],
-                'medalId': medal['id'] if medal else None
+                'editionId': edition['editionId'],
+                'sportId': sport['sportId'],
+                'cityId': city['cityId']
             })
 
             competitor = competitor_table.get_or_insert({
-                'athleteId': athlete['id'],
-                'editionId': edition['id'],
+                'athleteId': athlete['athleteId'],
+                'editionId': edition['editionId'],
                 'age': row_age
             })
 
-            participant_table.get_or_insert({
-                'athleteId': athlete['id'],
-                'resultId': result['id']
+            member = member_table.get_or_insert({
+                'athleteId': athlete['athleteId'],
+                'gameId': game['gameId'],
+                'eventId': event['eventId'],
+                'team': row_team
+            })
+
+            result = result_table.get_or_insert({
+                'resultId': index,
+                'gameId': game['gameId'],
+                'athleteId': athlete['athleteId'],
+                'eventId': event['eventId'],
+                'medalId': medal['medalId'] if medal else None
             })
         except Exception as e:
             print(f'Exception on line {index}: {e}')
