@@ -91,7 +91,7 @@ def import_usa_database():
 
     for athlete_row in cursor.fetchall():
         athlete_old_id = athlete_row[0]
-        athlete_name = athlete_row[1] + athlete_row[2]
+        athlete_name = f"{athlete_row[1]} {athlete_row[2]}"
         athlete_date_of_birth = athlete_row[3].date()
         athlete_date_of_death = athlete_row[4].date() if athlete_row[4] else None
         athlete_height = convert_feet_and_inches_to_cm(athlete_row[5]) if athlete_row[5] else None
