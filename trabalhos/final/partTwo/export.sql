@@ -1,40 +1,90 @@
--- --------------------------------------------------------
--- Servidor:                     localhost
--- Versão do servidor:           8.4.0 - MySQL Community Server - GPL
--- OS do Servidor:               Linux
--- HeidiSQL Versão:              12.7.0.6850
--- --------------------------------------------------------
+DROP DATABASE IF EXISTS olympics;
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET NAMES utf8 */;
-/*!50503 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+CREATE DATABASE olympics;
+USE olympics;
 
+CREATE TABLE athletes (
+    athleteId INT NOT NULL AUTO_INCREMENT,
+    name TEXT NOT NULL,
+    sex CHAR(1) NULL,
+    height DECIMAL(5, 2) NULL,
+    weight DECIMAL(5, 2) NULL,
+    dateOfBirth DATE NULL,
+    dateOfDeath DATE NULL,
+    hometown TEXT NULL,
+    education TEXT NULL,
+    noc CHAR(3) NOT NULL,
+    PRIMARY KEY (athleteId)
+);
 
--- Copiando estrutura do banco de dados para olympics
-CREATE DATABASE IF NOT EXISTS `olympics` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
-USE `olympics`;
+CREATE TABLE cities (
+    cityId INT NOT NULL AUTO_INCREMENT,
+    name TEXT NOT NULL,
+    PRIMARY KEY (cityId)
+);
 
--- Copiando estrutura para tabela olympics.athletes
-CREATE TABLE IF NOT EXISTS `athletes` (
-  `athleteId` int NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
-  `sex` char(1) DEFAULT NULL,
-  `height` decimal(5,2) DEFAULT NULL,
-  `weight` decimal(5,2) DEFAULT NULL,
-  `dateOfBirth` date DEFAULT NULL,
-  `dateOfDeath` date DEFAULT NULL,
-  `hometown` text,
-  `education` text,
-  `noc` char(3) NOT NULL,
-  PRIMARY KEY (`athleteId`)
-) ENGINE=InnoDB AUTO_INCREMENT=135133 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+CREATE TABLE sports (
+    sportId INT NOT NULL AUTO_INCREMENT,
+    name TEXT NOT NULL,
+    PRIMARY KEY (sportId)
+);
 
--- Copiando dados para a tabela olympics.athletes: ~6.333 rows (aproximadamente)
+CREATE TABLE events (
+    eventId INT NOT NULL AUTO_INCREMENT,
+    sportId INT NOT NULL,
+    name TEXT NOT NULL,
+    PRIMARY KEY (eventId),
+    FOREIGN KEY (sportId) REFERENCES sports(sportId)
+);
+
+CREATE TABLE medals (
+    medalId INT NOT NULL AUTO_INCREMENT,
+    name TEXT NOT NULL,
+    PRIMARY KEY (medalId)
+);
+
+CREATE TABLE editions (
+    editionId INT NOT NULL AUTO_INCREMENT,
+    year INT NOT NULL,
+    season TEXT NOT NULL,
+    title TEXT NOT NULL,
+    PRIMARY KEY (editionId)
+);
+
+CREATE TABLE hosts (
+    editionId INT NOT NULL,
+    sportId INT NOT NULL,
+    cityId INT NOT NULL,
+    PRIMARY KEY (editionId, sportId),
+    FOREIGN KEY (editionId) REFERENCES editions(editionId),
+    FOREIGN KEY (sportId) REFERENCES sports(sportId),
+    FOREIGN KEY (cityId) REFERENCES cities(cityId)
+);
+
+CREATE TABLE participants (
+    athleteId INT NOT NULL,
+    editionId INT NOT NULL,
+    age INT NULL,
+    PRIMARY KEY (athleteId, editionId),
+    FOREIGN KEY (athleteId) REFERENCES athletes(athleteId),
+    FOREIGN KEY (editionId) REFERENCES editions(editionId)
+);
+
+CREATE TABLE results (
+    resultId INT NOT NULL AUTO_INCREMENT,
+    athleteId INT NOT NULL,
+    editionId INT NULL,
+    sportId INT NOT NULL,
+    eventId INT NULL,
+    medalId INT NULL,
+    team TEXT NULL,
+    PRIMARY KEY (resultId),
+    FOREIGN KEY (athleteId) REFERENCES athletes(athleteId),
+    FOREIGN KEY (editionId) REFERENCES editions(editionId),
+    FOREIGN KEY (sportId) REFERENCES sports(sportId),
+    FOREIGN KEY (eventId) REFERENCES events(eventId),
+    FOREIGN KEY (medalId) REFERENCES medals(medalId)
+);
 INSERT INTO `athletes` (`athleteId`, `name`, `sex`, `height`, `weight`, `dateOfBirth`, `dateOfDeath`, `hometown`, `education`, `noc`) VALUES
 	(453, 'Leslie Ablett', 'M', NULL, NULL, NULL, NULL, NULL, NULL, 'GRB'),
 	(509, 'Gary Abraham', 'M', 175.00, 64.00, NULL, NULL, NULL, NULL, 'GRB'),
@@ -6317,67 +6367,59 @@ INSERT INTO `athletes` (`athleteId`, `name`, `sex`, `height`, `weight`, `dateOfB
 	(135072, 'Anna Katrina Zinkeisen (-Heseltine)', 'F', NULL, NULL, NULL, NULL, NULL, NULL, 'GRB'),
 	(135073, 'Doris Clare Zinkeisen (-Johnstone)', 'F', NULL, NULL, NULL, NULL, NULL, NULL, 'GRB'),
 	(135080, 'Francesca Zino', 'F', 180.00, 72.00, NULL, NULL, NULL, NULL, 'GRB'),
-	(135081, 'JeremyAbbott', NULL, 177.80, NULL, '1985-06-05', NULL, 'Aspen, CO', NULL, 'USA'),
-	(135082, 'TenleyAlbright', NULL, NULL, NULL, '1935-07-18', NULL, 'Newton Center, MA', 'Radcliffe College; Harvard Medical School', 'USA'),
-	(135083, 'EvanBates', NULL, 185.42, NULL, '1989-02-23', NULL, 'Northville, MI', 'University of Michigan ', 'USA'),
-	(135084, 'MonicaAbbott', NULL, 190.50, NULL, '1985-07-28', NULL, 'Salinas, CA', 'North Salinas High School Tennessee - 2007', 'USA'),
-	(135085, 'AliAguilar', NULL, 170.18, NULL, '1995-08-28', NULL, 'Orangevale, CA', 'Washington - 2017', 'USA'),
-	(135086, 'ValerieArioto', NULL, 170.18, NULL, '1989-04-10', NULL, 'Pleasanton, CA', 'Foothill High School California - 2012', 'USA'),
-	(135087, 'LauraBerg', NULL, 167.64, NULL, '1975-01-06', NULL, 'Santa Fe Springs, CA', 'Santa Fe Springs High School Fresno State', 'USA'),
-	(135088, 'NiaAbdallah', NULL, 175.26, NULL, '1984-01-24', NULL, 'Houston, TX', 'George Washington Carver High School for Applied Technology, Engineering and the Arts American Sports University', 'USA'),
-	(135089, 'RachaelAdams', NULL, 187.96, NULL, '1990-06-03', NULL, 'Cincinnati, OH', 'Mount Notre Dame (Cincinnati, Ohio) University of Texas', 'USA'),
-	(135090, 'FolukeAkinradewo Gunderson', NULL, 190.50, NULL, '1987-10-05', NULL, 'Fort Lauderdale, FL', 'Stanford University ‘09, Human Biology', 'USA'),
-	(135091, 'MattAnderson', NULL, 208.28, NULL, '1987-04-18', NULL, 'West Seneca, NY', 'Pennsylvania State University', 'USA'),
-	(135092, 'LloyBall', NULL, 203.20, NULL, '1972-02-17', NULL, 'Fort Wayne, IN', 'Woodlan High School (Indiana) IPFW', 'USA'),
-	(135093, 'KaylaBanwarth', NULL, 177.80, NULL, '1989-01-21', NULL, 'Dubuque, IA', 'Wahlert Catholic High School University of Nebraska \'12, English', 'USA'),
-	(135094, 'MichelleBartsch-Hackley', NULL, 190.50, NULL, '1990-02-12', NULL, 'Champaign, IL', 'University of Illinois ', 'USA'),
-	(135095, 'BamAdebayo', NULL, 205.74, NULL, '1997-07-18', NULL, 'Newark, NJ', 'University of Kentucky', 'USA'),
-	(135096, 'CarmeloAnthony', NULL, 203.20, NULL, '1984-05-29', NULL, 'New York, NY', 'Oak Hill Academy (Mouth of Wilson, Va.) ‘02 Syracuse University', 'USA'),
-	(135097, 'ArielAtkins', NULL, 172.72, NULL, '1996-07-30', NULL, 'Dallas, TX', 'University of Texas ', 'USA'),
-	(135098, 'SeimoneAugustus', NULL, 185.42, NULL, '1984-04-30', NULL, 'Baton Rouge, LA', 'Capitol High School (Baton Rouge, La.) \'02 Louisiana State University \'05, General Studies', 'USA'),
-	(135099, 'HarrisonBarnes', NULL, 203.20, NULL, '1992-05-30', NULL, 'Ames, IA', 'Ames High School (Ames, Iowa) ‘10 University of North Carolina', 'USA'),
-	(135100, 'NathanAdrian', NULL, 198.12, NULL, '1988-12-07', NULL, 'Bremerton, WA', 'Bremerton High School (Bremerton, Wash.) ‘06 University of California – Berkeley ‘12, Public Health', 'USA'),
-	(135101, 'HaleyAnderson', NULL, 177.80, NULL, '1991-11-20', NULL, 'Granite Bay, CA', 'Granite Bay High School (Granite Bay, Calif.) \'09 University of Southern California ’13, Communications', 'USA'),
-	(135102, 'MichaelAndrew', NULL, 198.12, NULL, '1999-04-18', NULL, 'Encinitas, CA', NULL, 'USA'),
-	(135103, 'ZachApple', NULL, 200.66, NULL, '1997-04-23', NULL, 'Trenton, OH', 'Indiana University \'19, Exercise Science', 'USA'),
-	(135104, 'ShirleyBabashoff', NULL, NULL, NULL, '1957-01-31', NULL, 'Fountain Valley, CA', 'Fountain Valley High School (Fountain Valley, Calif.)', 'USA'),
-	(135105, 'KathleenBaker', NULL, 172.72, NULL, '1997-02-28', NULL, 'Winston Salem, NC', 'Forsyth Country Day School (Lewisville, N.C.); Homeschooled ‘15 University of California, Berkeley ‘19, Public Health', 'USA'),
-	(135106, 'BoweBecker', NULL, NULL, NULL, '1997-07-07', NULL, 'Reno, NV', 'Faith Lutheran High School ‘15 University of Minnesota \'19', 'USA'),
-	(135107, 'ElizabethBeisel', NULL, 167.64, NULL, '1992-08-18', NULL, 'Saunderstown, RI', 'North Kingstown High School (North Kingstown, R.I.) ‘10 University of Florida ‘14, Telecommunications', 'USA'),
-	(135108, 'GunnarBentz', NULL, 195.58, NULL, '1996-01-03', NULL, 'Atlanta, GA', 'University of Georgia ', 'USA'),
-	(135109, 'MorolakeAkinosun', NULL, 162.56, NULL, '1994-05-17', NULL, 'Aurora, IL', 'Waubonsie Valley High School (Aurora, Ill.) ‘12 University of Texas ’16, Exercise Science', 'USA'),
-	(135110, 'NiaAli', NULL, 167.64, NULL, '1988-10-22', NULL, 'Philadelphia, PA', 'University of Southern California ', 'USA'),
-	(135111, 'ValarieAllman', NULL, NULL, NULL, '1995-02-23', NULL, 'Longmont, CO', 'Stanford University \'17, Product Design', 'USA'),
-	(135112, 'EvelynAshford', NULL, NULL, NULL, '1957-04-15', NULL, 'Roseville, CA', 'Roseville High School (Roseville, Calif.) UCLA', 'USA'),
-	(135113, 'TiannaBartoletta', NULL, 167.64, NULL, '1985-08-30', NULL, 'Tampa, FL', 'Elyria High School (Elyria, Ohio) ‘03 University of Tennessee ‘07, Social Work', 'USA'),
-	(135114, 'BobBeamon', NULL, NULL, NULL, '1946-08-29', NULL, 'Jamaica, NY', 'Jamaica High School (Jamaica, N.Y.) North Carolina Agricultural and Technical College', 'USA'),
-	(135115, 'KennyBednarek', NULL, 187.96, NULL, '1998-10-14', NULL, 'Rice Lake, WI', 'Indian Hills Community College ', 'USA'),
-	(135116, 'RaiBenjamin', NULL, 190.50, NULL, '1997-07-27', NULL, 'Mount Vernon, NY', 'University of Southern California', 'USA'),
-	(135117, 'JoanBenoit', NULL, NULL, NULL, '1957-05-16', NULL, 'Cape Elizabeth, ME', 'Cape Elizabeth High School (Cape Elizabeth, Maine) North Carolina State University, Bowdoin College', 'USA'),
-	(135118, 'MonicaAksamit', NULL, 182.88, NULL, '1990-02-18', NULL, 'Matawan, NJ', 'Matawan Regional High School (Matawan, N.J.) \'08 Penn State University ’16, Kinesiology', 'USA'),
-	(135119, 'MuhammadAli', NULL, NULL, NULL, '1942-01-17', '2016-06-03', 'Louisville, KY', 'Louisville Central High School (Louisiana, Ky.)', 'USA'),
-	(135120, 'NickAllen', NULL, 172.72, NULL, '1998-10-08', NULL, 'San Diego, CA', 'Parker High School (San Diego, Calif.) ‘17 ', 'USA'),
-	(135121, 'TylerAustin', NULL, 187.96, NULL, '1991-09-06', NULL, 'Conyers, GA', 'Heritage High School (Conyers, Ga.) ‘10', 'USA'),
-	(135122, 'ShaneBaz', NULL, 187.96, NULL, '1999-06-17', NULL, 'Cypress, TX', 'Concordia Lutheran High School (Tomball, Texas) ‘17 ', 'USA'),
-	(135123, 'MattAntoine', NULL, 190.50, NULL, '1985-04-02', NULL, 'Prairie du Chien, WI', ' California University of Pennsylvania', 'USA'),
-	(135124, 'TonyAzevedo', NULL, 185.42, NULL, '1981-11-21', NULL, 'Long Beach, CA', 'Wilson High School (Long Beach, Calif.) ‘00 Stanford University ‘05, International Relations', 'USA'),
-	(135125, 'DavidBackes', NULL, 190.50, NULL, '1984-05-01', NULL, 'Minneapolis, MN', 'Spring Lake Park High School Minnesota State-Mankato', 'USA'),
-	(135126, 'CaylaBarnes', NULL, 157.48, NULL, '1999-01-07', NULL, 'Eastvale, CA', 'Boston College ', 'USA'),
-	(135127, 'KaceyBellamy', NULL, 170.18, NULL, '1987-04-22', NULL, 'Westfield, MA', 'Berkshire School \'05 University of New Hampshire \'09', 'USA'),
-	(135128, 'ScottBaird', NULL, NULL, NULL, '1951-05-07', NULL, 'Bemidji, MN', NULL, 'USA'),
-	(135129, 'NormanBellingham', NULL, NULL, NULL, '1964-12-23', NULL, 'Rockville, MD', NULL, 'USA'),
-	(135130, 'NickBaumgartner', NULL, 182.88, NULL, '1981-12-17', NULL, 'Iron River, MI', 'West Iron County High School', 'USA'),
-	(135131, 'BruceBaumgartner', NULL, NULL, NULL, '1960-11-02', NULL, 'Haledon, NJ', 'Manchester Regional High School (Haledon, N.J.) Indiana State University, Oklahoma State University', 'USA'),
-	(135132, 'MadelynnBernau', NULL, 167.64, NULL, '1998-01-06', NULL, 'Waterford, WI', 'Waterford Union High School (Waterford, Wis.) ‘16 Martin Methodist College ‘20, Biology/Pre-veterinary Science', 'USA');
+	(135081, 'Jeremy Abbott', NULL, 177.80, NULL, '1985-06-05', NULL, 'Aspen, CO', NULL, 'USA'),
+	(135082, 'Tenley Albright', NULL, NULL, NULL, '1935-07-18', NULL, 'Newton Center, MA', 'Radcliffe College; Harvard Medical School', 'USA'),
+	(135083, 'Evan Bates', NULL, 185.42, NULL, '1989-02-23', NULL, 'Northville, MI', 'University of Michigan ', 'USA'),
+	(135084, 'Monica Abbott', NULL, 190.50, NULL, '1985-07-28', NULL, 'Salinas, CA', 'North Salinas High School Tennessee - 2007', 'USA'),
+	(135085, 'Ali Aguilar', NULL, 170.18, NULL, '1995-08-28', NULL, 'Orangevale, CA', 'Washington - 2017', 'USA'),
+	(135086, 'Valerie Arioto', NULL, 170.18, NULL, '1989-04-10', NULL, 'Pleasanton, CA', 'Foothill High School California - 2012', 'USA'),
+	(135087, 'Laura Berg', NULL, 167.64, NULL, '1975-01-06', NULL, 'Santa Fe Springs, CA', 'Santa Fe Springs High School Fresno State', 'USA'),
+	(135088, 'Nia Abdallah', NULL, 175.26, NULL, '1984-01-24', NULL, 'Houston, TX', 'George Washington Carver High School for Applied Technology, Engineering and the Arts American Sports University', 'USA'),
+	(135089, 'Rachael Adams', NULL, 187.96, NULL, '1990-06-03', NULL, 'Cincinnati, OH', 'Mount Notre Dame (Cincinnati, Ohio) University of Texas', 'USA'),
+	(135090, 'Foluke Akinradewo Gunderson', NULL, 190.50, NULL, '1987-10-05', NULL, 'Fort Lauderdale, FL', 'Stanford University ‘09, Human Biology', 'USA'),
+	(135091, 'Matt Anderson', NULL, 208.28, NULL, '1987-04-18', NULL, 'West Seneca, NY', 'Pennsylvania State University', 'USA'),
+	(135092, 'Lloy Ball', NULL, 203.20, NULL, '1972-02-17', NULL, 'Fort Wayne, IN', 'Woodlan High School (Indiana) IPFW', 'USA'),
+	(135093, 'Kayla Banwarth', NULL, 177.80, NULL, '1989-01-21', NULL, 'Dubuque, IA', 'Wahlert Catholic High School University of Nebraska \'12, English', 'USA'),
+	(135094, 'Michelle Bartsch-Hackley', NULL, 190.50, NULL, '1990-02-12', NULL, 'Champaign, IL', 'University of Illinois ', 'USA'),
+	(135095, 'Bam Adebayo', NULL, 205.74, NULL, '1997-07-18', NULL, 'Newark, NJ', 'University of Kentucky', 'USA'),
+	(135096, 'Carmelo Anthony', NULL, 203.20, NULL, '1984-05-29', NULL, 'New York, NY', 'Oak Hill Academy (Mouth of Wilson, Va.) ‘02 Syracuse University', 'USA'),
+	(135097, 'Ariel Atkins', NULL, 172.72, NULL, '1996-07-30', NULL, 'Dallas, TX', 'University of Texas ', 'USA'),
+	(135098, 'Seimone Augustus', NULL, 185.42, NULL, '1984-04-30', NULL, 'Baton Rouge, LA', 'Capitol High School (Baton Rouge, La.) \'02 Louisiana State University \'05, General Studies', 'USA'),
+	(135099, 'Harrison Barnes', NULL, 203.20, NULL, '1992-05-30', NULL, 'Ames, IA', 'Ames High School (Ames, Iowa) ‘10 University of North Carolina', 'USA'),
+	(135100, 'Nathan Adrian', NULL, 198.12, NULL, '1988-12-07', NULL, 'Bremerton, WA', 'Bremerton High School (Bremerton, Wash.) ‘06 University of California – Berkeley ‘12, Public Health', 'USA'),
+	(135101, 'Haley Anderson', NULL, 177.80, NULL, '1991-11-20', NULL, 'Granite Bay, CA', 'Granite Bay High School (Granite Bay, Calif.) \'09 University of Southern California ’13, Communications', 'USA'),
+	(135102, 'Michael Andrew', NULL, 198.12, NULL, '1999-04-18', NULL, 'Encinitas, CA', NULL, 'USA'),
+	(135103, 'Zach Apple', NULL, 200.66, NULL, '1997-04-23', NULL, 'Trenton, OH', 'Indiana University \'19, Exercise Science', 'USA'),
+	(135104, 'Shirley Babashoff', NULL, NULL, NULL, '1957-01-31', NULL, 'Fountain Valley, CA', 'Fountain Valley High School (Fountain Valley, Calif.)', 'USA'),
+	(135105, 'Kathleen Baker', NULL, 172.72, NULL, '1997-02-28', NULL, 'Winston Salem, NC', 'Forsyth Country Day School (Lewisville, N.C.); Homeschooled ‘15 University of California, Berkeley ‘19, Public Health', 'USA'),
+	(135106, 'Bowe Becker', NULL, NULL, NULL, '1997-07-07', NULL, 'Reno, NV', 'Faith Lutheran High School ‘15 University of Minnesota \'19', 'USA'),
+	(135107, 'Elizabeth Beisel', NULL, 167.64, NULL, '1992-08-18', NULL, 'Saunderstown, RI', 'North Kingstown High School (North Kingstown, R.I.) ‘10 University of Florida ‘14, Telecommunications', 'USA'),
+	(135108, 'Gunnar Bentz', NULL, 195.58, NULL, '1996-01-03', NULL, 'Atlanta, GA', 'University of Georgia ', 'USA'),
+	(135109, 'Morolake Akinosun', NULL, 162.56, NULL, '1994-05-17', NULL, 'Aurora, IL', 'Waubonsie Valley High School (Aurora, Ill.) ‘12 University of Texas ’16, Exercise Science', 'USA'),
+	(135110, 'Nia Ali', NULL, 167.64, NULL, '1988-10-22', NULL, 'Philadelphia, PA', 'University of Southern California ', 'USA'),
+	(135111, 'Valarie Allman', NULL, NULL, NULL, '1995-02-23', NULL, 'Longmont, CO', 'Stanford University \'17, Product Design', 'USA'),
+	(135112, 'Evelyn Ashford', NULL, NULL, NULL, '1957-04-15', NULL, 'Roseville, CA', 'Roseville High School (Roseville, Calif.) UCLA', 'USA'),
+	(135113, 'Tianna Bartoletta', NULL, 167.64, NULL, '1985-08-30', NULL, 'Tampa, FL', 'Elyria High School (Elyria, Ohio) ‘03 University of Tennessee ‘07, Social Work', 'USA'),
+	(135114, 'Bob Beamon', NULL, NULL, NULL, '1946-08-29', NULL, 'Jamaica, NY', 'Jamaica High School (Jamaica, N.Y.) North Carolina Agricultural and Technical College', 'USA'),
+	(135115, 'Kenny Bednarek', NULL, 187.96, NULL, '1998-10-14', NULL, 'Rice Lake, WI', 'Indian Hills Community College ', 'USA'),
+	(135116, 'Rai Benjamin', NULL, 190.50, NULL, '1997-07-27', NULL, 'Mount Vernon, NY', 'University of Southern California', 'USA'),
+	(135117, 'Joan Benoit', NULL, NULL, NULL, '1957-05-16', NULL, 'Cape Elizabeth, ME', 'Cape Elizabeth High School (Cape Elizabeth, Maine) North Carolina State University, Bowdoin College', 'USA'),
+	(135118, 'Monica Aksamit', NULL, 182.88, NULL, '1990-02-18', NULL, 'Matawan, NJ', 'Matawan Regional High School (Matawan, N.J.) \'08 Penn State University ’16, Kinesiology', 'USA'),
+	(135119, 'Muhammad Ali', NULL, NULL, NULL, '1942-01-17', '2016-06-03', 'Louisville, KY', 'Louisville Central High School (Louisiana, Ky.)', 'USA'),
+	(135120, 'Nick Allen', NULL, 172.72, NULL, '1998-10-08', NULL, 'San Diego, CA', 'Parker High School (San Diego, Calif.) ‘17 ', 'USA'),
+	(135121, 'Tyler Austin', NULL, 187.96, NULL, '1991-09-06', NULL, 'Conyers, GA', 'Heritage High School (Conyers, Ga.) ‘10', 'USA'),
+	(135122, 'Shane Baz', NULL, 187.96, NULL, '1999-06-17', NULL, 'Cypress, TX', 'Concordia Lutheran High School (Tomball, Texas) ‘17 ', 'USA'),
+	(135123, 'Matt Antoine', NULL, 190.50, NULL, '1985-04-02', NULL, 'Prairie du Chien, WI', ' California University of Pennsylvania', 'USA'),
+	(135124, 'Tony Azevedo', NULL, 185.42, NULL, '1981-11-21', NULL, 'Long Beach, CA', 'Wilson High School (Long Beach, Calif.) ‘00 Stanford University ‘05, International Relations', 'USA'),
+	(135125, 'David Backes', NULL, 190.50, NULL, '1984-05-01', NULL, 'Minneapolis, MN', 'Spring Lake Park High School Minnesota State-Mankato', 'USA'),
+	(135126, 'Cayla Barnes', NULL, 157.48, NULL, '1999-01-07', NULL, 'Eastvale, CA', 'Boston College ', 'USA'),
+	(135127, 'Kacey Bellamy', NULL, 170.18, NULL, '1987-04-22', NULL, 'Westfield, MA', 'Berkshire School \'05 University of New Hampshire \'09', 'USA'),
+	(135128, 'Scott Baird', NULL, NULL, NULL, '1951-05-07', NULL, 'Bemidji, MN', NULL, 'USA'),
+	(135129, 'Norman Bellingham', NULL, NULL, NULL, '1964-12-23', NULL, 'Rockville, MD', NULL, 'USA'),
+	(135130, 'Nick Baumgartner', NULL, 182.88, NULL, '1981-12-17', NULL, 'Iron River, MI', 'West Iron County High School', 'USA'),
+	(135131, 'Bruce Baumgartner', NULL, NULL, NULL, '1960-11-02', NULL, 'Haledon, NJ', 'Manchester Regional High School (Haledon, N.J.) Indiana State University, Oklahoma State University', 'USA'),
+	(135132, 'Madelynn Bernau', NULL, 167.64, NULL, '1998-01-06', NULL, 'Waterford, WI', 'Waterford Union High School (Waterford, Wis.) ‘16 Martin Methodist College ‘20, Biology/Pre-veterinary Science', 'USA');
 
--- Copiando estrutura para tabela olympics.cities
-CREATE TABLE IF NOT EXISTS `cities` (
-  `cityId` int NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
-  PRIMARY KEY (`cityId`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Copiando dados para a tabela olympics.cities: ~42 rows (aproximadamente)
 INSERT INTO `cities` (`cityId`, `name`) VALUES
 	(1, 'Amsterdam'),
 	(2, 'Berlin'),
@@ -6422,83 +6464,71 @@ INSERT INTO `cities` (`cityId`, `name`) VALUES
 	(41, 'Squaw Valley'),
 	(42, 'St. Louis');
 
--- Copiando estrutura para tabela olympics.editions
-CREATE TABLE IF NOT EXISTS `editions` (
-  `editionId` int NOT NULL AUTO_INCREMENT,
-  `year` int NOT NULL,
-  `season` text NOT NULL,
-  `title` text NOT NULL,
-  PRIMARY KEY (`editionId`)
-) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+INSERT INTO `sports` (`sportId`, `name`) VALUES
+	(1, 'Water Polo'),
+	(2, 'Swimming'),
+	(3, 'Athletics'),
+	(4, 'Fencing'),
+	(5, 'Basketball'),
+	(6, 'Wrestling'),
+	(7, 'Bobsleigh'),
+	(8, 'Figure Skating'),
+	(9, 'Boxing'),
+	(10, 'Judo'),
+	(11, 'Curling'),
+	(12, 'Badminton'),
+	(13, 'Cycling'),
+	(14, 'Hockey'),
+	(15, 'Sailing'),
+	(16, 'Freestyle Skiing'),
+	(17, 'Gymnastics'),
+	(18, 'Art Competitions'),
+	(19, 'Tennis'),
+	(20, 'Football'),
+	(21, 'Canoeing'),
+	(22, 'Alpine Skiing'),
+	(23, 'Diving'),
+	(24, 'Rowing'),
+	(25, 'Lacrosse'),
+	(26, 'Shooting'),
+	(27, 'Rugby Sevens'),
+	(28, 'Short Track Speed Skating'),
+	(29, 'Modern Pentathlon'),
+	(30, 'Equestrianism'),
+	(31, 'Synchronized Swimming'),
+	(32, 'Cricket'),
+	(33, 'Ice Hockey'),
+	(34, 'Cross Country Skiing'),
+	(35, 'Biathlon'),
+	(36, 'Table Tennis'),
+	(37, 'Archery'),
+	(38, 'Weightlifting'),
+	(39, 'Racquets'),
+	(40, 'Motorboating'),
+	(41, 'Triathlon'),
+	(42, 'Trampolining'),
+	(43, 'Taekwondo'),
+	(44, 'Volleyball'),
+	(45, 'Polo'),
+	(46, 'Tug-Of-War'),
+	(47, 'Rugby'),
+	(48, 'Jeu De Paume'),
+	(49, 'Rhythmic Gymnastics'),
+	(50, 'Speed Skating'),
+	(51, 'Skeleton'),
+	(52, 'Luge'),
+	(53, 'Alpinism'),
+	(54, 'Handball'),
+	(55, 'Beach Volleyball'),
+	(56, 'Golf'),
+	(57, 'Ski Jumping'),
+	(58, 'Snowboarding'),
+	(59, 'Nordic Combined'),
+	(60, 'Softball'),
+	(61, 'Track and Field'),
+	(62, 'Baseball'),
+	(63, 'Canoe/Kayak');
 
--- Copiando dados para a tabela olympics.editions: ~54 rows (aproximadamente)
-INSERT INTO `editions` (`editionId`, `year`, `season`, `title`) VALUES
-	(1, 1928, 'Summer', '1928 Summer'),
-	(2, 1936, 'Summer', '1936 Summer'),
-	(3, 1976, 'Summer', '1976 Summer'),
-	(4, 1980, 'Summer', '1980 Summer'),
-	(5, 1920, 'Summer', '1920 Summer'),
-	(6, 1924, 'Summer', '1924 Summer'),
-	(7, 1906, 'Summer', '1906 Summer'),
-	(8, 1912, 'Summer', '1912 Summer'),
-	(9, 1968, 'Summer', '1968 Summer'),
-	(10, 1972, 'Summer', '1972 Summer'),
-	(11, 2012, 'Summer', '2012 Summer'),
-	(12, 2000, 'Summer', '2000 Summer'),
-	(13, 2008, 'Summer', '2008 Summer'),
-	(14, 2004, 'Summer', '2004 Summer'),
-	(15, 1992, 'Summer', '1992 Summer'),
-	(16, 2002, 'Winter', '2002 Winter'),
-	(17, 1948, 'Winter', '1948 Winter'),
-	(18, 1908, 'Summer', '1908 Summer'),
-	(19, 1984, 'Summer', '1984 Summer'),
-	(20, 1988, 'Summer', '1988 Summer'),
-	(21, 2016, 'Summer', '2016 Summer'),
-	(22, 2014, 'Winter', '2014 Winter'),
-	(23, 1960, 'Summer', '1960 Summer'),
-	(24, 1964, 'Summer', '1964 Summer'),
-	(25, 1948, 'Summer', '1948 Summer'),
-	(26, 1976, 'Winter', '1976 Winter'),
-	(27, 1996, 'Summer', '1996 Summer'),
-	(28, 2010, 'Winter', '2010 Winter'),
-	(29, 1932, 'Summer', '1932 Summer'),
-	(30, 2006, 'Winter', '2006 Winter'),
-	(31, 1998, 'Winter', '1998 Winter'),
-	(32, 1952, 'Summer', '1952 Summer'),
-	(33, 1956, 'Summer', '1956 Summer'),
-	(34, 1952, 'Winter', '1952 Winter'),
-	(35, 1900, 'Summer', '1900 Summer'),
-	(36, 1924, 'Winter', '1924 Winter'),
-	(37, 1964, 'Winter', '1964 Winter'),
-	(38, 1968, 'Winter', '1968 Winter'),
-	(39, 1936, 'Winter', '1936 Winter'),
-	(40, 1988, 'Winter', '1988 Winter'),
-	(41, 1992, 'Winter', '1992 Winter'),
-	(42, 1956, 'Winter', '1956 Winter'),
-	(43, 1980, 'Winter', '1980 Winter'),
-	(44, 1984, 'Winter', '1984 Winter'),
-	(45, 1972, 'Winter', '1972 Winter'),
-	(46, 1896, 'Summer', '1896 Summer'),
-	(47, 1994, 'Winter', '1994 Winter'),
-	(48, 1928, 'Winter', '1928 Winter'),
-	(49, 1960, 'Winter', '1960 Winter'),
-	(50, 1932, 'Winter', '1932 Winter'),
-	(51, 1904, 'Summer', '1904 Summer'),
-	(52, 2018, 'Winter', '2018 Winter'),
-	(53, 2022, 'Winter', '2022 Winter'),
-	(54, 2020, 'Summer', '2020 Summer');
-
--- Copiando estrutura para tabela olympics.events
-CREATE TABLE IF NOT EXISTS `events` (
-  `eventId` int NOT NULL AUTO_INCREMENT,
-  `sportId` int NOT NULL,
-  `name` text NOT NULL,
-  PRIMARY KEY (`eventId`),
-  KEY `sportId` (`sportId`),
-  CONSTRAINT `events_ibfk_1` FOREIGN KEY (`sportId`) REFERENCES `sports` (`sportId`)
-) ENGINE=InnoDB AUTO_INCREMENT=586 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Copiando dados para a tabela olympics.events: ~585 rows (aproximadamente)
 INSERT INTO `events` (`eventId`, `sportId`, `name`) VALUES
 	(1, 1, 'Water Polo Men\'s Water Polo'),
 	(2, 2, 'Swimming Men\'s 100 metres Backstroke'),
@@ -7086,20 +7116,67 @@ INSERT INTO `events` (`eventId`, `sportId`, `name`) VALUES
 	(584, 6, 'Wrestling Men\'s Welterweight, Greco-Roman'),
 	(585, 16, 'Freestyle Skiing Men\'s Slopestyle');
 
--- Copiando estrutura para tabela olympics.hosts
-CREATE TABLE IF NOT EXISTS `hosts` (
-  `editionId` int NOT NULL,
-  `sportId` int NOT NULL,
-  `cityId` int NOT NULL,
-  PRIMARY KEY (`editionId`,`sportId`),
-  KEY `sportId` (`sportId`),
-  KEY `cityId` (`cityId`),
-  CONSTRAINT `hosts_ibfk_1` FOREIGN KEY (`editionId`) REFERENCES `editions` (`editionId`),
-  CONSTRAINT `hosts_ibfk_2` FOREIGN KEY (`sportId`) REFERENCES `sports` (`sportId`),
-  CONSTRAINT `hosts_ibfk_3` FOREIGN KEY (`cityId`) REFERENCES `cities` (`cityId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+INSERT INTO `medals` (`medalId`, `name`) VALUES
+	(1, 'Bronze'),
+	(2, 'Gold'),
+	(3, 'Silver');
 
--- Copiando dados para a tabela olympics.hosts: ~677 rows (aproximadamente)
+INSERT INTO `editions` (`editionId`, `year`, `season`, `title`) VALUES
+	(1, 1928, 'Summer', '1928 Summer'),
+	(2, 1936, 'Summer', '1936 Summer'),
+	(3, 1976, 'Summer', '1976 Summer'),
+	(4, 1980, 'Summer', '1980 Summer'),
+	(5, 1920, 'Summer', '1920 Summer'),
+	(6, 1924, 'Summer', '1924 Summer'),
+	(7, 1906, 'Summer', '1906 Summer'),
+	(8, 1912, 'Summer', '1912 Summer'),
+	(9, 1968, 'Summer', '1968 Summer'),
+	(10, 1972, 'Summer', '1972 Summer'),
+	(11, 2012, 'Summer', '2012 Summer'),
+	(12, 2000, 'Summer', '2000 Summer'),
+	(13, 2008, 'Summer', '2008 Summer'),
+	(14, 2004, 'Summer', '2004 Summer'),
+	(15, 1992, 'Summer', '1992 Summer'),
+	(16, 2002, 'Winter', '2002 Winter'),
+	(17, 1948, 'Winter', '1948 Winter'),
+	(18, 1908, 'Summer', '1908 Summer'),
+	(19, 1984, 'Summer', '1984 Summer'),
+	(20, 1988, 'Summer', '1988 Summer'),
+	(21, 2016, 'Summer', '2016 Summer'),
+	(22, 2014, 'Winter', '2014 Winter'),
+	(23, 1960, 'Summer', '1960 Summer'),
+	(24, 1964, 'Summer', '1964 Summer'),
+	(25, 1948, 'Summer', '1948 Summer'),
+	(26, 1976, 'Winter', '1976 Winter'),
+	(27, 1996, 'Summer', '1996 Summer'),
+	(28, 2010, 'Winter', '2010 Winter'),
+	(29, 1932, 'Summer', '1932 Summer'),
+	(30, 2006, 'Winter', '2006 Winter'),
+	(31, 1998, 'Winter', '1998 Winter'),
+	(32, 1952, 'Summer', '1952 Summer'),
+	(33, 1956, 'Summer', '1956 Summer'),
+	(34, 1952, 'Winter', '1952 Winter'),
+	(35, 1900, 'Summer', '1900 Summer'),
+	(36, 1924, 'Winter', '1924 Winter'),
+	(37, 1964, 'Winter', '1964 Winter'),
+	(38, 1968, 'Winter', '1968 Winter'),
+	(39, 1936, 'Winter', '1936 Winter'),
+	(40, 1988, 'Winter', '1988 Winter'),
+	(41, 1992, 'Winter', '1992 Winter'),
+	(42, 1956, 'Winter', '1956 Winter'),
+	(43, 1980, 'Winter', '1980 Winter'),
+	(44, 1984, 'Winter', '1984 Winter'),
+	(45, 1972, 'Winter', '1972 Winter'),
+	(46, 1896, 'Summer', '1896 Summer'),
+	(47, 1994, 'Winter', '1994 Winter'),
+	(48, 1928, 'Winter', '1928 Winter'),
+	(49, 1960, 'Winter', '1960 Winter'),
+	(50, 1932, 'Winter', '1932 Winter'),
+	(51, 1904, 'Summer', '1904 Summer'),
+	(52, 2018, 'Winter', '2018 Winter'),
+	(53, 2022, 'Winter', '2022 Winter'),
+	(54, 2020, 'Summer', '2020 Summer');
+
 INSERT INTO `hosts` (`editionId`, `sportId`, `cityId`) VALUES
 	(1, 1, 1),
 	(1, 2, 1),
@@ -7779,31 +7856,6 @@ INSERT INTO `hosts` (`editionId`, `sportId`, `cityId`) VALUES
 	(51, 4, 42),
 	(51, 56, 42);
 
--- Copiando estrutura para tabela olympics.medals
-CREATE TABLE IF NOT EXISTS `medals` (
-  `medalId` int NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
-  PRIMARY KEY (`medalId`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Copiando dados para a tabela olympics.medals: ~3 rows (aproximadamente)
-INSERT INTO `medals` (`medalId`, `name`) VALUES
-	(1, 'Bronze'),
-	(2, 'Gold'),
-	(3, 'Silver');
-
--- Copiando estrutura para tabela olympics.participants
-CREATE TABLE IF NOT EXISTS `participants` (
-  `athleteId` int NOT NULL,
-  `editionId` int NOT NULL,
-  `age` int DEFAULT NULL,
-  PRIMARY KEY (`athleteId`,`editionId`),
-  KEY `editionId` (`editionId`),
-  CONSTRAINT `participants_ibfk_1` FOREIGN KEY (`athleteId`) REFERENCES `athletes` (`athleteId`),
-  CONSTRAINT `participants_ibfk_2` FOREIGN KEY (`editionId`) REFERENCES `editions` (`editionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Copiando dados para a tabela olympics.participants: ~8.592 rows (aproximadamente)
 INSERT INTO `participants` (`athleteId`, `editionId`, `age`) VALUES
 	(453, 1, 24),
 	(453, 2, 32),
@@ -16398,29 +16450,6 @@ INSERT INTO `participants` (`athleteId`, `editionId`, `age`) VALUES
 	(135131, 27, NULL),
 	(135132, 54, NULL);
 
--- Copiando estrutura para tabela olympics.results
-CREATE TABLE IF NOT EXISTS `results` (
-  `resultId` int NOT NULL AUTO_INCREMENT,
-  `athleteId` int NOT NULL,
-  `editionId` int DEFAULT NULL,
-  `sportId` int NOT NULL,
-  `eventId` int DEFAULT NULL,
-  `medalId` int DEFAULT NULL,
-  `team` text,
-  PRIMARY KEY (`resultId`),
-  KEY `athleteId` (`athleteId`),
-  KEY `editionId` (`editionId`),
-  KEY `sportId` (`sportId`),
-  KEY `eventId` (`eventId`),
-  KEY `medalId` (`medalId`),
-  CONSTRAINT `results_ibfk_1` FOREIGN KEY (`athleteId`) REFERENCES `athletes` (`athleteId`),
-  CONSTRAINT `results_ibfk_2` FOREIGN KEY (`editionId`) REFERENCES `editions` (`editionId`),
-  CONSTRAINT `results_ibfk_3` FOREIGN KEY (`sportId`) REFERENCES `sports` (`sportId`),
-  CONSTRAINT `results_ibfk_4` FOREIGN KEY (`eventId`) REFERENCES `events` (`eventId`),
-  CONSTRAINT `results_ibfk_5` FOREIGN KEY (`medalId`) REFERENCES `medals` (`medalId`)
-) ENGINE=InnoDB AUTO_INCREMENT=16479 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Copiando dados para a tabela olympics.results: ~12.351 rows (aproximadamente)
 INSERT INTO `results` (`resultId`, `athleteId`, `editionId`, `sportId`, `eventId`, `medalId`, `team`) VALUES
 	(1, 453, 1, 1, 1, NULL, 'Great Britain'),
 	(2, 9022, 1, 1, 1, NULL, 'Great Britain'),
@@ -28775,81 +28804,3 @@ INSERT INTO `results` (`resultId`, `athleteId`, `editionId`, `sportId`, `eventId
 	(16477, 135131, NULL, 6, NULL, 1, NULL),
 	(16478, 135132, NULL, 26, NULL, 1, NULL);
 
--- Copiando estrutura para tabela olympics.sports
-CREATE TABLE IF NOT EXISTS `sports` (
-  `sportId` int NOT NULL AUTO_INCREMENT,
-  `name` text NOT NULL,
-  PRIMARY KEY (`sportId`)
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- Copiando dados para a tabela olympics.sports: ~63 rows (aproximadamente)
-INSERT INTO `sports` (`sportId`, `name`) VALUES
-	(1, 'Water Polo'),
-	(2, 'Swimming'),
-	(3, 'Athletics'),
-	(4, 'Fencing'),
-	(5, 'Basketball'),
-	(6, 'Wrestling'),
-	(7, 'Bobsleigh'),
-	(8, 'Figure Skating'),
-	(9, 'Boxing'),
-	(10, 'Judo'),
-	(11, 'Curling'),
-	(12, 'Badminton'),
-	(13, 'Cycling'),
-	(14, 'Hockey'),
-	(15, 'Sailing'),
-	(16, 'Freestyle Skiing'),
-	(17, 'Gymnastics'),
-	(18, 'Art Competitions'),
-	(19, 'Tennis'),
-	(20, 'Football'),
-	(21, 'Canoeing'),
-	(22, 'Alpine Skiing'),
-	(23, 'Diving'),
-	(24, 'Rowing'),
-	(25, 'Lacrosse'),
-	(26, 'Shooting'),
-	(27, 'Rugby Sevens'),
-	(28, 'Short Track Speed Skating'),
-	(29, 'Modern Pentathlon'),
-	(30, 'Equestrianism'),
-	(31, 'Synchronized Swimming'),
-	(32, 'Cricket'),
-	(33, 'Ice Hockey'),
-	(34, 'Cross Country Skiing'),
-	(35, 'Biathlon'),
-	(36, 'Table Tennis'),
-	(37, 'Archery'),
-	(38, 'Weightlifting'),
-	(39, 'Racquets'),
-	(40, 'Motorboating'),
-	(41, 'Triathlon'),
-	(42, 'Trampolining'),
-	(43, 'Taekwondo'),
-	(44, 'Volleyball'),
-	(45, 'Polo'),
-	(46, 'Tug-Of-War'),
-	(47, 'Rugby'),
-	(48, 'Jeu De Paume'),
-	(49, 'Rhythmic Gymnastics'),
-	(50, 'Speed Skating'),
-	(51, 'Skeleton'),
-	(52, 'Luge'),
-	(53, 'Alpinism'),
-	(54, 'Handball'),
-	(55, 'Beach Volleyball'),
-	(56, 'Golf'),
-	(57, 'Ski Jumping'),
-	(58, 'Snowboarding'),
-	(59, 'Nordic Combined'),
-	(60, 'Softball'),
-	(61, 'Track and Field'),
-	(62, 'Baseball'),
-	(63, 'Canoe/Kayak');
-
-/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
-/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
-/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
