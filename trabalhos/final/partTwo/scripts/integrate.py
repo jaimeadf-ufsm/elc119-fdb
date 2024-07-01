@@ -107,18 +107,15 @@ def import_usa_database():
         athlete_new_id = cursor.lastrowid
 
         cursor.execute(
-            "SELECT olympics_usa.Olympics.year, olympics_usa.Olympics.season FROM olympics_usa.Participation JOIN olympics_usa.Olympics ON olympics_usa.Participation.olympics_id = olympics_usa.Olympics.id WHERE olympics_usa.Participation.athlete_id = %s",
+            "SELECT olympics_usa.Olympics.year, olympics_usa.Olympics.season FROM olympics_usa.Participation JOIN olympics_usa.Olympics ON olympics_usa.Participation.olympics_id = olympics_usa.Olympics.id WHERE olympics_usa.Participation.athlete_id = %s GROUP BY olympics_usa.Olympics.year, olympics_usa.Olympics.season",
             (athlete_old_id,)
         )
 
         for participation_row in cursor.fetchall():
             edition = get_or_create_edition(participation_row[0], participation_row[1])
 
-            try:
-                cursor.execute("INSERT INTO olympics.participants(athleteId, editionId) VALUES(%s, %s)", (athlete_new_id, edition["editionId"]))
-                db.commit()
-            except Exception as exception:
-                print(exception)
+            cursor.execute("INSERT INTO olympics.participants(athleteId, editionId) VALUES(%s, %s)", (athlete_new_id, edition["editionId"]))
+            db.commit()
 
         achievements = [
             (athlete_row[8], get_or_create_medal("Gold")),
