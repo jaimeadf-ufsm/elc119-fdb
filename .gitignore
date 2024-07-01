@@ -1,3 +1,4 @@
 .vscode/
 *.chc
+.DS_Store
 brModelo.jar
