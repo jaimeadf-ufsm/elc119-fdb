@@ -23,7 +23,7 @@ def import_grb_database():
     cursor.execute("INSERT INTO olympics.medal(medalId, name) SELECT medalId, name FROM olympics_grb.medals")
     cursor.execute("INSERT INTO olympics.edition(editionId, year, season, alternateTitle) SELECT editionId, year, season, title FROM olympics_grb.editions")
     cursor.execute("INSERT INTO olympics.host(editionId, sportId, cityId) SELECT editionId, sportId, cityId FROM olympics_grb.games")
-    cursor.execute("INSERT INTO olympics.participant(athleteId, editionId, age) SELECT athleteId, editionId, age FROM olympics_grb.competitors")
+    cursor.execute("INSERT INTO olympics.participant(athleteId, editionId, age) SELECT DISTINCT athleteId, editionId, sportId, age FROM olympics_grb.results NATURAL JOIN olympics_grb.games NATURAL JOIN olympics_grb.competitors")
     cursor.execute("INSERT INTO olympics.result(athleteId, editionId, sportId, eventId, medalId, team) SELECT athleteId, editionId, sportId, eventId, medalId, team FROM olympics_grb.results NATURAL JOIN olympics_grb.members NATURAL JOIN olympics_grb.games")
 
     db.commit()
@@ -179,7 +179,10 @@ def import_usa_database():
 
             new_edition_id = new_edition_ids[olympics_id]
 
-            cursor.execute("INSERT INTO olympics.participant(athleteId, editionId) VALUES(%s, %s)", (new_athlete_id, new_edition_id))
+            cursor.execute(
+                "INSERT INTO olympics.participant(athleteId, editionId, sportId) VALUES(%s, %s, %s)",
+                (new_athlete_id, new_edition_id, new_athlete_sport_id)
+            )
             db.commit()
 
             update_or_create_host(new_edition_id, new_athlete_sport_id, olympics_city)

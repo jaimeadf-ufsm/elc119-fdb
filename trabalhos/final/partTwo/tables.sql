@@ -66,10 +66,12 @@ CREATE TABLE host (
 CREATE TABLE participant (
     athleteId INT NOT NULL,
     editionId INT NOT NULL,
+    sportId INT NOT NULL,
     age INT NULL,
-    PRIMARY KEY (athleteId, editionId),
+    PRIMARY KEY (athleteId, editionId, sportId),
     FOREIGN KEY (athleteId) REFERENCES athlete(athleteId),
-    FOREIGN KEY (editionId) REFERENCES edition(editionId)
+    FOREIGN KEY (editionId) REFERENCES edition(editionId),
+    FOREIGN KEY (sportId) REFERENCES sport(sportId)
 );
 
 CREATE TABLE result (
