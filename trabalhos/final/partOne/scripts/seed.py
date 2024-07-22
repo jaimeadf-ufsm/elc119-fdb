@@ -8,10 +8,10 @@ import mysql.connector
 dotenv.load_dotenv()
 
 db = mysql.connector.connect(
-    host=os.getenv("MYSQL_HOST"),
-    user=os.getenv("MYSQL_USER"),
-    password=os.getenv("MYSQL_PASSWORD"),
-    database=os.getenv("MYSQL_DATABASE")
+    host=os.getenv('MYSQL_HOST'),
+    user=os.getenv('MYSQL_USER'),
+    password=os.getenv('MYSQL_PASSWORD'),
+    database=os.getenv('MYSQL_DATABASE')
 )
 
 class ConsistentTable:
@@ -197,7 +197,7 @@ result_table = ResultTable(db)
 member_table = MemberTable(db)
 
 with open('data/athlete_events.csv') as file:
-    reader = csv.reader(file, delimiter=',', quotechar='"')
+    reader = csv.reader(file, delimiter=',', quotechar="'")
 
     for index, row in enumerate(reader):
         if index == 0:
