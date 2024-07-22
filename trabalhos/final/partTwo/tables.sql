@@ -3,7 +3,7 @@ DROP DATABASE IF EXISTS olympics;
 CREATE DATABASE olympics;
 USE olympics;
 
-CREATE TABLE athletes (
+CREATE TABLE athlete (
     athleteId INT NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
     sex CHAR(1) NULL,
@@ -17,33 +17,33 @@ CREATE TABLE athletes (
     PRIMARY KEY (athleteId)
 );
 
-CREATE TABLE cities (
+CREATE TABLE city (
     cityId INT NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
     PRIMARY KEY (cityId)
 );
 
-CREATE TABLE sports (
+CREATE TABLE sport (
     sportId INT NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
     PRIMARY KEY (sportId)
 );
 
-CREATE TABLE events (
+CREATE TABLE event (
     eventId INT NOT NULL AUTO_INCREMENT,
     sportId INT NOT NULL,
     name TEXT NOT NULL,
     PRIMARY KEY (eventId),
-    FOREIGN KEY (sportId) REFERENCES sports(sportId)
+    FOREIGN KEY (sportId) REFERENCES sport(sportId)
 );
 
-CREATE TABLE medals (
+CREATE TABLE medal (
     medalId INT NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
     PRIMARY KEY (medalId)
 );
 
-CREATE TABLE editions (
+CREATE TABLE edition (
     editionId INT NOT NULL AUTO_INCREMENT,
     year INT NOT NULL,
     season TEXT NOT NULL,
@@ -53,26 +53,26 @@ CREATE TABLE editions (
     PRIMARY KEY (editionId)
 );
 
-CREATE TABLE hosts (
+CREATE TABLE host (
     editionId INT NOT NULL,
     sportId INT NOT NULL,
     cityId INT NOT NULL,
     PRIMARY KEY (editionId, sportId),
-    FOREIGN KEY (editionId) REFERENCES editions(editionId),
-    FOREIGN KEY (sportId) REFERENCES sports(sportId),
-    FOREIGN KEY (cityId) REFERENCES cities(cityId)
+    FOREIGN KEY (editionId) REFERENCES edition(editionId),
+    FOREIGN KEY (sportId) REFERENCES sport(sportId),
+    FOREIGN KEY (cityId) REFERENCES city(cityId)
 );
 
-CREATE TABLE participants (
+CREATE TABLE participant (
     athleteId INT NOT NULL,
     editionId INT NOT NULL,
     age INT NULL,
     PRIMARY KEY (athleteId, editionId),
-    FOREIGN KEY (athleteId) REFERENCES athletes(athleteId),
-    FOREIGN KEY (editionId) REFERENCES editions(editionId)
+    FOREIGN KEY (athleteId) REFERENCES athlete(athleteId),
+    FOREIGN KEY (editionId) REFERENCES edition(editionId)
 );
 
-CREATE TABLE results (
+CREATE TABLE result (
     resultId INT NOT NULL AUTO_INCREMENT,
     athleteId INT NOT NULL,
     editionId INT NULL,
@@ -81,9 +81,9 @@ CREATE TABLE results (
     medalId INT NULL,
     team TEXT NULL,
     PRIMARY KEY (resultId),
-    FOREIGN KEY (athleteId) REFERENCES athletes(athleteId),
-    FOREIGN KEY (editionId) REFERENCES editions(editionId),
-    FOREIGN KEY (sportId) REFERENCES sports(sportId),
-    FOREIGN KEY (eventId) REFERENCES events(eventId),
-    FOREIGN KEY (medalId) REFERENCES medals(medalId)
+    FOREIGN KEY (athleteId) REFERENCES athlete(athleteId),
+    FOREIGN KEY (editionId) REFERENCES edition(editionId),
+    FOREIGN KEY (sportId) REFERENCES sport(sportId),
+    FOREIGN KEY (eventId) REFERENCES event(eventId),
+    FOREIGN KEY (medalId) REFERENCES medal(medalId)
 );

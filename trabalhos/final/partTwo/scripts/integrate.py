@@ -16,15 +16,15 @@ db = mysql.connector.connect(
 def import_grb_database():
     cursor = db.cursor()
 
-    cursor.execute("INSERT INTO olympics.athletes(athleteId, name, sex, height, weight, noc) SELECT athleteId, name, sex, height, weight, 'GRB' AS noc FROM olympics_grb.athletes;")
-    cursor.execute("INSERT INTO olympics.cities(cityId, name) SELECT cityId, name FROM olympics_grb.cities;")
-    cursor.execute("INSERT INTO olympics.sports(sportId, name) SELECT sportId, name FROM olympics_grb.sports;")
-    cursor.execute("INSERT INTO olympics.events(eventId, sportId, name) SELECT eventId, sportId, name FROM olympics_grb.events;")
-    cursor.execute("INSERT INTO olympics.medals(medalId, name) SELECT medalId, name FROM olympics_grb.medals;")
-    cursor.execute("INSERT INTO olympics.editions(editionId, year, season, alternateTitle) SELECT editionId, year, season, title FROM olympics_grb.editions;")
-    cursor.execute("INSERT INTO olympics.hosts(editionId, sportId, cityId) SELECT editionId, sportId, cityId FROM olympics_grb.games;")
-    cursor.execute("INSERT INTO olympics.participants(athleteId, editionId, age) SELECT athleteId, editionId, age FROM olympics_grb.competitors;")
-    cursor.execute("INSERT INTO olympics.results(athleteId, editionId, sportId, eventId, medalId, team) SELECT athleteId, editionId, sportId, eventId, medalId, team FROM olympics_grb.results NATURAL JOIN olympics_grb.members NATURAL JOIN olympics_grb.games;")
+    cursor.execute("INSERT INTO olympics.athlete(athleteId, name, sex, height, weight, noc) SELECT athleteId, name, sex, height, weight, 'GRB' AS noc FROM olympics_grb.athletes;")
+    cursor.execute("INSERT INTO olympics.city(cityId, name) SELECT cityId, name FROM olympics_grb.cities;")
+    cursor.execute("INSERT INTO olympics.sport(sportId, name) SELECT sportId, name FROM olympics_grb.sports;")
+    cursor.execute("INSERT INTO olympics.event(eventId, sportId, name) SELECT eventId, sportId, name FROM olympics_grb.events;")
+    cursor.execute("INSERT INTO olympics.medal(medalId, name) SELECT medalId, name FROM olympics_grb.medals;")
+    cursor.execute("INSERT INTO olympics.edition(editionId, year, season, alternateTitle) SELECT editionId, year, season, title FROM olympics_grb.editions;")
+    cursor.execute("INSERT INTO olympics.host(editionId, sportId, cityId) SELECT editionId, sportId, cityId FROM olympics_grb.games;")
+    cursor.execute("INSERT INTO olympics.participant(athleteId, editionId, age) SELECT athleteId, editionId, age FROM olympics_grb.competitors;")
+    cursor.execute("INSERT INTO olympics.result(athleteId, editionId, sportId, eventId, medalId, team) SELECT athleteId, editionId, sportId, eventId, medalId, team FROM olympics_grb.results NATURAL JOIN olympics_grb.members NATURAL JOIN olympics_grb.games;")
 
     db.commit()
 
@@ -36,11 +36,11 @@ def import_usa_database():
         return (int(match.group(1)) * 12 + int(match.group(2))) * decimal.Decimal('2.54')
     
     def update_or_create_city(name):
-        cursor.execute("SELECT cityId FROM olympics.cities WHERE name = %s", (name,))
+        cursor.execute("SELECT cityId FROM olympics.city WHERE name = %s", (name,))
         row = cursor.fetchone()
 
         if row is None:
-            cursor.execute("INSERT INTO olympics.cities(name) VALUES(%s)", (name,))
+            cursor.execute("INSERT INTO olympics.city(name) VALUES(%s)", (name,))
             db.commit()
 
             return cursor.lastrowid
@@ -48,11 +48,11 @@ def import_usa_database():
         return row[0]
     
     def update_or_create_sport(name):
-        cursor.execute("SELECT sportId FROM olympics.sports WHERE name = %s", (name,))
+        cursor.execute("SELECT sportId FROM olympics.sport WHERE name = %s", (name,))
         row = cursor.fetchone()
 
         if row is None:
-            cursor.execute("INSERT INTO olympics.sports(name) VALUES(%s)", (name,))
+            cursor.execute("INSERT INTO olympics.sport(name) VALUES(%s)", (name,))
             db.commit()
 
             return cursor.lastrowid
@@ -60,11 +60,11 @@ def import_usa_database():
         return row[0]
 
     def update_or_create_medal(name):
-        cursor.execute("SELECT medalId FROM olympics.medals WHERE name = %s", (name,))
+        cursor.execute("SELECT medalId FROM olympics.medal WHERE name = %s", (name,))
         row = cursor.fetchone()
 
         if row is None:
-            cursor.execute("INSERT INTO olympics.medals(name) VALUES(%s)", (name,))
+            cursor.execute("INSERT INTO olympics.medal(name) VALUES(%s)", (name,))
             db.commit()
 
             return cursor.lastrowid
@@ -73,7 +73,7 @@ def import_usa_database():
         
     def update_or_create_edition(year, season, alternate_title, official_title, country):
         cursor.execute(
-            "SELECT editionId FROM olympics.editions WHERE year = %s AND season = %s",
+            "SELECT editionId FROM olympics.edition WHERE year = %s AND season = %s",
             (year, season)
         )
 
@@ -81,7 +81,7 @@ def import_usa_database():
 
         if row is None:
             cursor.execute(
-                "INSERT INTO olympics.editions(year, season, alternateTitle, officialTitle, country) VALUES(%s, %s, %s, %s, %s)",
+                "INSERT INTO olympics.edition(year, season, alternateTitle, officialTitle, country) VALUES(%s, %s, %s, %s, %s)",
                 (year, season, alternate_title, official_title, country)
             )
             db.commit()
@@ -89,7 +89,7 @@ def import_usa_database():
             return cursor.lastrowid
 
         cursor.execute(
-            "UPDATE olympics.editions SET officialTitle = %s, country = %s WHERE editionId = %s",
+            "UPDATE olympics.edition SET officialTitle = %s, country = %s WHERE editionId = %s",
             (official_title, country, row[0])
         )
         db.commit()
@@ -97,13 +97,13 @@ def import_usa_database():
         return row[0]
     
     def update_or_create_host(edition_id, sport_id, city):
-        cursor.execute("SELECT * FROM olympics.hosts WHERE editionId = %s AND sportId = %s", (edition_id, sport_id))
+        cursor.execute("SELECT * FROM olympics.host WHERE editionId = %s AND sportId = %s", (edition_id, sport_id))
         row = cursor.fetchone()
 
         if row is None:
             city_id = update_or_create_city(city)
 
-            cursor.execute("INSERT INTO olympics.hosts(editionId, sportId, cityId) VALUES(%s, %s, %s)", (edition_id, sport_id, city_id))
+            cursor.execute("INSERT INTO olympics.host(editionId, sportId, cityId) VALUES(%s, %s, %s)", (edition_id, sport_id, city_id))
             db.commit()
 
 
@@ -159,7 +159,7 @@ def import_usa_database():
         new_athlete_sport_id = new_sport_ids[athlete_sport_id]
 
         cursor.execute(
-            "INSERT INTO olympics.athletes(name, height, dateOfBirth, dateOfDeath, hometown, education, noc) VALUES (%s, %s, %s, %s, %s, %s, 'USA')",
+            "INSERT INTO olympics.athlete(name, height, dateOfBirth, dateOfDeath, hometown, education, noc) VALUES (%s, %s, %s, %s, %s, %s, 'USA')",
             (athlete_name, athlete_height, athlete_date_of_birth, athlete_date_of_death, athlete_hometown, athlete_education)
         )
         db.commit()
@@ -179,7 +179,7 @@ def import_usa_database():
 
             new_edition_id = new_edition_ids[olympics_id]
 
-            cursor.execute("INSERT INTO olympics.participants(athleteId, editionId) VALUES(%s, %s)", (new_athlete_id, new_edition_id))
+            cursor.execute("INSERT INTO olympics.participant(athleteId, editionId) VALUES(%s, %s)", (new_athlete_id, new_edition_id))
             db.commit()
 
             update_or_create_host(new_edition_id, new_athlete_sport_id, olympics_city)
@@ -196,7 +196,7 @@ def import_usa_database():
 
             for _ in range(0, amount):
                 cursor.execute(
-                    "INSERT INTO olympics.results(athleteId, sportId, medalId) VALUES(%s, %s, %s)",
+                    "INSERT INTO olympics.result(athleteId, sportId, medalId) VALUES(%s, %s, %s)",
                     (new_athlete_id, new_athlete_sport_id, medal_id)
                 )
         
