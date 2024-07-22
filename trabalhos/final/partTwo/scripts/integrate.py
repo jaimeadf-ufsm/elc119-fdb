@@ -16,15 +16,15 @@ db = mysql.connector.connect(
 def import_grb_database():
     cursor = db.cursor()
 
-    cursor.execute("INSERT INTO olympics.athlete(athleteId, name, sex, height, weight, noc) SELECT athleteId, name, sex, height, weight, 'GRB' AS noc FROM olympics_grb.athletes;")
-    cursor.execute("INSERT INTO olympics.city(cityId, name) SELECT cityId, name FROM olympics_grb.cities;")
-    cursor.execute("INSERT INTO olympics.sport(sportId, name) SELECT sportId, name FROM olympics_grb.sports;")
-    cursor.execute("INSERT INTO olympics.event(eventId, sportId, name) SELECT eventId, sportId, name FROM olympics_grb.events;")
-    cursor.execute("INSERT INTO olympics.medal(medalId, name) SELECT medalId, name FROM olympics_grb.medals;")
-    cursor.execute("INSERT INTO olympics.edition(editionId, year, season, alternateTitle) SELECT editionId, year, season, title FROM olympics_grb.editions;")
-    cursor.execute("INSERT INTO olympics.host(editionId, sportId, cityId) SELECT editionId, sportId, cityId FROM olympics_grb.games;")
-    cursor.execute("INSERT INTO olympics.participant(athleteId, editionId, age) SELECT athleteId, editionId, age FROM olympics_grb.competitors;")
-    cursor.execute("INSERT INTO olympics.result(athleteId, editionId, sportId, eventId, medalId, team) SELECT athleteId, editionId, sportId, eventId, medalId, team FROM olympics_grb.results NATURAL JOIN olympics_grb.members NATURAL JOIN olympics_grb.games;")
+    cursor.execute("INSERT INTO olympics.athlete(athleteId, name, sex, height, weight, noc) SELECT athleteId, name, sex, height, weight, 'GRB' AS noc FROM olympics_grb.athletes")
+    cursor.execute("INSERT INTO olympics.city(cityId, name) SELECT cityId, name FROM olympics_grb.cities")
+    cursor.execute("INSERT INTO olympics.sport(sportId, name) SELECT sportId, name FROM olympics_grb.sports")
+    cursor.execute("INSERT INTO olympics.event(eventId, sportId, name) SELECT eventId, sportId, name FROM olympics_grb.events")
+    cursor.execute("INSERT INTO olympics.medal(medalId, name) SELECT medalId, name FROM olympics_grb.medals")
+    cursor.execute("INSERT INTO olympics.edition(editionId, year, season, alternateTitle) SELECT editionId, year, season, title FROM olympics_grb.editions")
+    cursor.execute("INSERT INTO olympics.host(editionId, sportId, cityId) SELECT editionId, sportId, cityId FROM olympics_grb.games")
+    cursor.execute("INSERT INTO olympics.participant(athleteId, editionId, age) SELECT athleteId, editionId, age FROM olympics_grb.competitors")
+    cursor.execute("INSERT INTO olympics.result(athleteId, editionId, sportId, eventId, medalId, team) SELECT athleteId, editionId, sportId, eventId, medalId, team FROM olympics_grb.results NATURAL JOIN olympics_grb.members NATURAL JOIN olympics_grb.games")
 
     db.commit()
 
