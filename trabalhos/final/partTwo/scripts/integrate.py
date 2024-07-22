@@ -32,7 +32,7 @@ def import_usa_database():
     cursor = db.cursor()
 
     def convert_feet_and_inches_to_cm(measurement):
-        match = re.match("(\\d+).*(?:’|')(\\d+).*(?:”|\')", measurement)
+        match = re.match('(\\d+).*(?:’|\')(\\d+).*(?:”|")', measurement)
         return (int(match.group(1)) * 12 + int(match.group(2))) * decimal.Decimal('2.54')
     
     def update_or_create_city(name):
