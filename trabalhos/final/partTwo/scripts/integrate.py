@@ -124,7 +124,7 @@ def import_usa_database():
         sport_id = sport_row[0]
         sport_name = sport_row[1]
 
-        new_sport_ids[sport_id] = update_or_create_sport('Canoeing' if sport_name == 'Canoe/Cayak' else sport_name)
+        new_sport_ids[sport_id] = update_or_create_sport('Canoeing' if sport_name == 'Canoe/Kayak' else sport_name)
 
 
     cursor.execute('SELECT id, edition, country, season, year FROM olympics_usa.Olympics')
