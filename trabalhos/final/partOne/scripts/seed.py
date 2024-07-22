@@ -28,7 +28,7 @@ class ConsistentTable:
             self.ensure_values_match(data, cached)
             return cached
 
-        self.cache[key] = self.insert(data);
+        self.cache[key] = self.insert(data)
 
         return self.cache[key]    
     
