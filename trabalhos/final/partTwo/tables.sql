@@ -47,7 +47,9 @@ CREATE TABLE editions (
     editionId INT NOT NULL AUTO_INCREMENT,
     year INT NOT NULL,
     season TEXT NOT NULL,
-    title TEXT NOT NULL,
+    alternateTitle TEXT NOT NULL,
+    officialTitle TEXT NULL,
+    country TEXT NULL,
     PRIMARY KEY (editionId)
 );
 
