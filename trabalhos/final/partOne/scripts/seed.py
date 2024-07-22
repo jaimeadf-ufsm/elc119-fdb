@@ -197,7 +197,7 @@ result_table = ResultTable(db)
 member_table = MemberTable(db)
 
 with open('data/athlete_events.csv') as file:
-    reader = csv.reader(file, delimiter=',', quotechar="'")
+    reader = csv.reader(file, delimiter=',', quotechar='"')
 
     for index, row in enumerate(reader):
         if index == 0:
