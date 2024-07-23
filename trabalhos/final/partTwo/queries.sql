@@ -41,7 +41,7 @@ WHERE
 -- Selecionar todos os atletas que competiram mais de uma vez na mesma competição
 SELECT
     athlete.name,
-    edition.officialTitle,
+    edition.alternateTitle,
     sport.name,
     event.name
 FROM
@@ -52,7 +52,7 @@ FROM
     JOIN event ON result.eventId = event.eventId
 GROUP BY
     athlete.name,
-    edition.officialTitle,
+    edition.alternateTitle,
     sport.name,
     event.name
 HAVING
@@ -60,7 +60,7 @@ HAVING
 
 -- Selecionar olimpiadas cujos jogos ocorreram em mais de uma cidade
 SELECT DISTINCT
-    edition.officialTitle,
+    edition.alternateTitle,
     city.name
 FROM
     edition
