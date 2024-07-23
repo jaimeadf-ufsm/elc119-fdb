@@ -31,6 +31,83 @@ def import_grb_database():
 def import_usa_database():
     cursor = db.cursor()
 
+    portuguese_to_english_cities = {
+        'Albertville': 'Albertville',
+        'Amesterdão': 'Amsterdam',
+        'Antuérpia': 'Antwerp',
+        'Atenas': 'Athina',
+        'Atlanta': 'Atlanta',
+        'Barcelona': 'Barcelona',
+        'Berlim': 'Berlin',
+        'Brisbane': 'Brisbane',
+        'Calgary': 'Calgary',
+        'Chamonix': 'Chamonix',
+        'Cidade do México': 'Mexico City',
+        "Cortina d'Ampezzo": "Cortina d'Ampezzo",
+        'Estocolmo': 'Stockholm',
+        'Garmisch-Partenkirchen': 'Garmisch-Partenkirchen',
+        'Grenoble': 'Grenoble',
+        'Helsinque': 'Helsinki',
+        'Innsbruck': 'Innsbruck',
+        'Lake Placid': 'Lake Placid',
+        'Lillehammer': 'Lillehammer',
+        'Londres': 'London',
+        'Los Angeles': 'Los Angeles',
+        'Melbourne': 'Melbourne',
+        'Milão-Cortina': 'Milan-Cortina',
+        'Montreal': 'Montreal',
+        'Moscou': 'Moscow',
+        'Munique': 'Munich',
+        'Nagano': 'Nagano',
+        'Oslo': 'Oslo',
+        'Paris': 'Paris',
+        'Pequim': 'Beijing',
+        'Pyeongchang': 'Pyeongchang',
+        'Rio de Janeiro': 'Rio de Janeiro',
+        'Roma': 'Rome',
+        'Saint Louis': 'St. Louis',
+        'Salt Lake City': 'Salt Lake City',
+        'São Moritz': 'St. Moritz',
+        'Sapporo': 'Sapporo',
+        'Sarajevo': 'Sarajevo',
+        'Seul': 'Seoul',
+        'Sóchi': 'Sochi',
+        'Squaw Valley': 'Squaw Valley',
+        'Sydney': 'Sydney',
+        'Tóquio': 'Tokyo',
+        'Turim': 'Turin',
+        'Vancouver': 'Vancouver'
+    }
+
+    portuguese_to_english_countries = {
+        'Alemanha': 'Germany',
+        'Alemanha Ocidental': 'West Germany',
+        'Austrália': 'Australia',
+        'Áustria': 'Austria',
+        'Bélgica': 'Belgium',
+        'Brasil': 'Brazil',
+        'Canadá': 'Canada',
+        'China': 'China',
+        'Coreia do Sul': 'South Korea',
+        'Espanha': 'Spain',
+        'Estados Unidos': 'United States',
+        'Finlândia': 'Finland',
+        'França': 'France',
+        'Grã-Bretanha': 'Great Britain',
+        'Grécia': 'Greece',
+        'Itália': 'Italy',
+        'Japão': 'Japan',
+        'Jugoslávia': 'Yugoslavia',
+        'lia': 'Italy',
+        'México': 'Mexico',
+        'Noruega': 'Norway',
+        'Países Baixos': 'Netherlands',
+        'Rússia': 'Russia',
+        'Suécia': 'Sweden',
+        'Suíça': 'Switzerland',
+        'União Soviética': 'Soviet Union'
+    }
+
     def convert_feet_and_inches_to_cm(measurement):
         match = re.match('(\\d+).*(?:’|\')(\\d+).*(?:”|")', measurement)
         return (int(match.group(1)) * 12 + int(match.group(2))) * decimal.Decimal('2.54')
@@ -117,6 +194,7 @@ def import_usa_database():
         'Bronze': update_or_create_medal('Bronze'),
     }
 
+    
 
     cursor.execute('SELECT id, name FROM olympics_usa.Sport')
 
@@ -141,7 +219,7 @@ def import_usa_database():
             olympics_season,
             f'{olympics_year} {olympics_season}',
             olympics_edition,
-            olympics_country
+            portuguese_to_english_countries[olympics_country]
         )
 
 
@@ -193,7 +271,11 @@ def import_usa_database():
             )
             db.commit()
 
-            update_or_create_host(new_edition_id, new_athlete_sport_id, olympics_city)
+            update_or_create_host(
+                new_edition_id,
+                new_athlete_sport_id,
+                portuguese_to_english_cities[olympics_city]
+            )
 
         achievements = [
             (athlete_gold_medals, new_medal_ids['Gold']),
