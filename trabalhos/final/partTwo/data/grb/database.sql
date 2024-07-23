@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS `olympics_grb` ;
-CREATE DATABASE `olympics_grb`;
+DROP DATABASE IF EXISTS `olympics_gbr` ;
+CREATE DATABASE `olympics_gbr`;
 
-USE `olympics_grb`;
+USE `olympics_gbr`;
 
 CREATE TABLE athletes (
     athleteId INT NOT NULL,
