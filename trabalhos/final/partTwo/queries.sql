@@ -270,4 +270,3 @@ FROM
 GROUP BY
     athlete.sex,
     medal.name;
-    
