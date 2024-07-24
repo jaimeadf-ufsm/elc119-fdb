@@ -74,7 +74,7 @@ GROUP BY
     editionId,
     cityId;
 
--- Selecionar a média de altura e média de peso por gênero
+-- Selecionar a média de altura e a média de peso por gênero
 SELECT
     sex,
     AVG(height) AS averageHeight,
@@ -193,13 +193,16 @@ ORDER BY
     event.name,
     medal.name;
 
--- Selecionar a porcentagem de participantes por gênero em relação ao total
+-- Selecionar a porcentagem de participantes por gênero
 WITH
     allParticipants AS (
         SELECT
-            COUNT(DISTINCT athleteId) totalParticipantCount
+            COUNT(DISTINCT athlete.athleteId) totalParticipantCount
         FROM
             participant
+            JOIN athlete ON athlete.athleteId = participant.athleteId
+        WHERE
+            athlete.sex IS NOT NULL
     )
 SELECT
     athlete.sex sex,
@@ -212,7 +215,8 @@ FROM
     athlete,
     allParticipants
 WHERE
-    athlete.athleteId IN (
+    sex IS NOT NULL
+    AND athlete.athleteId IN (
         SELECT
             athleteId
         FROM
