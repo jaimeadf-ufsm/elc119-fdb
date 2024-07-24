@@ -51,7 +51,7 @@ Para alcançar a 3FN, decompusemos a tabela original em tabelas menores que elim
 - ID -> Name, Sex, Height, Weight
 - Year, Season -> Games
 - Year, Season, Sport -> City
-- ID, Season, Year -> Age
+- ID, Year, Season -> Age
 - ID, Year, Season, Sport, Event -> Team
 
 #### Abordagem relacional
