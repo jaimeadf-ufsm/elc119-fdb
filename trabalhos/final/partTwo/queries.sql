@@ -48,7 +48,7 @@ ORDER BY
     edition.alternateTitle;
 
 -- Selecionar olimpiadas cujos jogos ocorreram em mais de uma cidade
-SELECT DISTINCT
+SELECT
     edition.alternateTitle,
     city.name
 FROM
@@ -65,7 +65,10 @@ WHERE
             editionId
         HAVING
             COUNT(DISTINCT cityId) > 1
-    );
+    )
+GROUP BY
+    editionId,
+    cityId;
 
 -- Selecionar a média de altura e média de peso por gênero
 SELECT
