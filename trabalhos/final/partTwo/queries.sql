@@ -8,7 +8,9 @@ FROM
     NATURAL JOIN participant
     NATURAL JOIN edition
 WHERE
-    edition.year >= 2010;
+    edition.year >= 2010
+GROUP BY
+    athleteId;
 
 -- Selecionar atletas que ganharam medalhas em 2016
 SELECT
@@ -19,7 +21,9 @@ FROM
     NATURAL JOIN edition
 WHERE
     edition.year = 2016
-    AND result.medalId IS NOT NULL;
+    AND result.medalId IS NOT NULL
+GROUP BY
+    athleteId;
 
 -- Selecionar todos os atletas que participaram de mais de uma olimpíada
 SELECT
