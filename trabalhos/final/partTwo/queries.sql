@@ -10,8 +10,8 @@ FROM
 WHERE
     edition.year >= 2010;
 
--- Selecionar atletas que ganharam medalha em 2016
-SELECT DISTINCT
+-- Selecionar atletas que ganharam medalhas em 2016
+SELECT
     name
 FROM
     athlete
@@ -21,25 +21,31 @@ WHERE
     edition.year = 2016
     AND result.medalId IS NOT NULL;
 
--- Selecionar todos os atletas que competiram mais de uma vez na mesma competição
+-- Selecionar todos os atletas que participaram de mais de uma olímpiada
 SELECT
     athlete.name,
-    edition.alternateTitle,
-    sport.name,
-    event.name
+    edition.alternateTitle
 FROM
     athlete
-    JOIN result ON athlete.athleteId = result.athleteId
-    JOIN edition ON result.editionId = edition.editionId
-    JOIN sport ON result.sportId = sport.sportId
-    JOIN event ON result.eventId = event.eventId
+    NATURAL JOIN participant
+    NATURAL JOIN edition
+WHERE
+    athlete.athleteId IN (
+        SELECT
+            participant.athleteId
+        FROM
+            participant
+        GROUP BY
+            participant.athleteId
+        HAVING
+            COUNT(DISTINCT participant.editionId) > 1
+    )
 GROUP BY
+    athlete.athleteId,
+    edition.editionId
+ORDER BY
     athlete.name,
-    edition.alternateTitle,
-    sport.name,
-    event.name
-HAVING
-    COUNT(*) > 1;
+    edition.alternateTitle;
 
 -- Selecionar olimpiadas cujos jogos ocorreram em mais de uma cidade
 SELECT DISTINCT
@@ -74,10 +80,10 @@ GROUP BY
 -- Selecionar atletas que participaram em mais de 1 esporte
 SELECT
     athlete.name AS athleteName,
-    COUNT(DISTINCT result.sportId) AS sportCount
+    COUNT(DISTINCT participant.sportId) AS sportCount
 FROM
     athlete
-    NATURAL JOIN result
+    NATURAL JOIN participant
 GROUP BY
     athlete.name
 HAVING
@@ -106,46 +112,43 @@ FROM
 GROUP BY
     noc;
 
--- Selecionar atletas que competiram mais de uma vez no mesmo esporte, mesma modalidade e mesma edição 
-SELECT
-    athlete.name AS athleteName,
-    edition.year AS editionYear,
-    edition.season AS editionSeason,
-    sport.name AS sportName,
-    event.name AS eventName,
-    medal.name AS medalName
-FROM
-    athlete
-    JOIN result ON athlete.athleteId = result.athleteId
-    JOIN edition ON result.editionId = edition.editionId
-    JOIN medal ON result.medalId = medal.medalId
-    JOIN event ON result.eventId = event.eventId
-    JOIN sport ON event.sportId = sport.sportId
-WHERE
-    (athlete.athleteId, edition.editionId, event.eventId) IN (
-        SELECT
-            athlete.athleteId,
-            edition.editionId,
-            event.eventId
-        FROM
-            athlete
-            JOIN result ON athlete.athleteId = result.athleteId
-            JOIN edition ON result.editionId = edition.editionId
-            JOIN event ON result.eventId = event.eventId
-        GROUP BY
-            athlete.athleteId,
-            edition.editionId,
-            event.eventId
-        HAVING
-            COUNT(result.medalId) > 1
-    )
-ORDER BY
-    athlete.name,
-    edition.year,
-    edition.season,
-    sport.name,
-    event.name,
-    medal.name;
+-- Selecionar atletas que ganharam mais de uma medalha no mesmo esporte, mesma modalidade e mesma edição
+    SELECT
+        athlete.name AS athleteName,
+        edition.year AS editionYear,
+        edition.season AS editionSeason,
+        sport.name AS sportName,
+        event.name AS eventName,
+        medal.name AS medalName
+    FROM
+        athlete
+        JOIN result ON athlete.athleteId = result.athleteId
+        JOIN edition ON result.editionId = edition.editionId
+        JOIN medal ON result.medalId = medal.medalId
+        JOIN event ON result.eventId = event.eventId
+        JOIN sport ON event.sportId = sport.sportId
+    WHERE
+        (athlete.athleteId, edition.editionId, event.eventId) IN (
+            SELECT
+                result.athleteId,
+                result.editionId,
+                result.eventId
+            FROM
+                result
+            GROUP BY
+                result.athleteId,
+                result.editionId,
+                result.eventId
+            HAVING
+                COUNT(result.medalId) > 1
+        )
+    ORDER BY
+        athlete.name,
+        edition.year,
+        edition.season,
+        sport.name,
+        event.name,
+        medal.name;
 
 -- Selecionar atletas que ganharam mais de 1 medalha em uma edição
 SELECT
@@ -165,13 +168,12 @@ FROM
 WHERE
     (athlete.athleteId, edition.editionId) IN (
         SELECT
-            athlete.athleteId,
+            result.athleteId,
             result.editionId
         FROM
-            athlete
-            JOIN result ON athlete.athleteId = result.athleteId
+            result
         GROUP BY
-            athlete.athleteId,
+            result.athleteId,
             result.editionId
         HAVING
             COUNT(result.medalId) > 1
@@ -269,4 +271,4 @@ FROM
     ) AS total ON athlete.sex = total.sex
 GROUP BY
     athlete.sex,
-    medal.name;
+    medal.medalId;
