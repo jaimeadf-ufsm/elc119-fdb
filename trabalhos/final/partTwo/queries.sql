@@ -21,7 +21,7 @@ WHERE
     edition.year = 2016
     AND result.medalId IS NOT NULL;
 
--- Selecionar todos os atletas que participaram de mais de uma olímpiada
+-- Selecionar todos os atletas que participaram de mais de uma olimpíada
 SELECT
     athlete.name,
     edition.alternateTitle
