@@ -47,7 +47,7 @@ ORDER BY
     athlete.name,
     edition.alternateTitle;
 
--- Selecionar olimpiadas cujos jogos ocorreram em mais de uma cidade
+-- Selecionar olimpíadas cujos jogos ocorreram em mais de uma cidade
 SELECT
     edition.alternateTitle,
     city.name
