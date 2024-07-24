@@ -200,7 +200,6 @@ def import_usa_database():
     }
 
     
-
     cursor.execute('SELECT id, name FROM olympics_usa.Sport')
 
     for sport_row in cursor.fetchall():
