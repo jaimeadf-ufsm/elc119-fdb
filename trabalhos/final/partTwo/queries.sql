@@ -1,8 +1,8 @@
 USE olympics;
 
 -- Selecionar o nome de todos os atletas que participaram em olimpíadas desde 2010
-SELECT DISTINCT
-    athlete.name
+SELECT
+    name
 FROM
     athlete
     NATURAL JOIN participant
@@ -94,7 +94,7 @@ SELECT
     COUNT(DISTINCT result.sportId) AS sportCount
 FROM
     athlete
-    JOIN result ON athlete.athleteId = result.athleteId
+    NATURAL JOIN result
 GROUP BY
     athlete.name
 HAVING
@@ -102,15 +102,13 @@ HAVING
 ORDER BY
     sportCount DESC;
 
--- Selecionar o número de medalhas por pais
+-- Selecionar o número de medalhas por país
 SELECT
     athlete.noc AS noc,
     COUNT(result.medalId) AS medalCount
 FROM
     athlete
-    JOIN result ON athlete.athleteId = result.athleteId
-WHERE
-    result.medalId IS NOT NULL
+    NATURAL JOIN result
 GROUP BY
     athlete.noc
 ORDER BY
@@ -125,7 +123,7 @@ FROM
 GROUP BY
     noc;
 
--- Selecionar atletas que ganharam mais de uma medalha no mesmo esporte, modalidade e edição 
+-- Selecionar atletas que competiram mais de uma vez no mesmo esporte, mesma modalidade e mesma edição 
 SELECT
     athlete.name AS athleteName,
     edition.year AS editionYear,
@@ -151,8 +149,6 @@ WHERE
             JOIN result ON athlete.athleteId = result.athleteId
             JOIN edition ON result.editionId = edition.editionId
             JOIN event ON result.eventId = event.eventId
-        WHERE
-            result.medalId IS NOT NULL
         GROUP BY
             athlete.athleteId,
             edition.editionId,
@@ -168,7 +164,7 @@ ORDER BY
     event.name,
     medal.name;
 
--- Selecionar atletas que ganharam mmais de 1 medalha em uma edição
+-- Selecionar atletas que ganharam mais de 1 medalha em uma edição
 SELECT
     athlete.name AS athleteName,
     edition.year AS editionYear,
@@ -184,21 +180,16 @@ FROM
     JOIN event ON result.eventId = event.eventId
     JOIN sport ON event.sportId = sport.sportId
 WHERE
-    (athlete.name, edition.year, edition.season) IN (
+    (athlete.athleteId, edition.editionId) IN (
         SELECT
-            athlete.name,
-            edition.year,
-            edition.season
+            athlete.athleteId,
+            result.editionId
         FROM
             athlete
             JOIN result ON athlete.athleteId = result.athleteId
-            JOIN edition ON result.editionId = edition.editionId
-        WHERE
-            result.medalId IS NOT NULL
         GROUP BY
-            athlete.name,
-            edition.year,
-            edition.season
+            athlete.athleteId,
+            result.editionId
         HAVING
             COUNT(result.medalId) > 1
     )
@@ -210,40 +201,65 @@ ORDER BY
     event.name,
     medal.name;
 
--- Selecionar a relação participação e conquista por gênero
+-- Selecionar a porcentagem de participantes por gênero em relação ao total
+WITH
+    allParticipants AS (
+        SELECT
+            COUNT(DISTINCT athleteId) totalParticipantCount
+        FROM
+            participant
+    )
 SELECT
-    athlete.sex AS athleteSex,
-    COUNT(DISTINCT athlete.athleteId) AS participantsCount,
-    COUNT(
-        DISTINCT CASE
-            WHEN result.medalId IS NOT NULL THEN athlete.athleteId
-        END
-    ) AS medalWinnersCount,
+    athlete.sex sex,
+    COUNT(*) participantCount,
     ROUND(
-        (COUNT(DISTINCT athlete.athleteId) * 100.0) / (
-            SELECT
-                COUNT(DISTINCT athlete.athleteId)
-            FROM
-                athlete
-        ),
+        (COUNT(*) * 100.0) / allParticipants.totalParticipantCount,
         2
-    ) AS participantionPercentage,
-    ROUND(
-        (
-            COUNT(
-                DISTINCT CASE
-                    WHEN result.medalId IS NOT NULL THEN athlete.athleteId
-                END
-            ) * 100.0
-        ) / COUNT(DISTINCT athlete.athleteId),
-        2
-    ) AS medalWinnersPercentage
+    ) participantPercentage
 FROM
-    athlete
-    LEFT JOIN result ON athlete.athleteId = result.athleteId
+    athlete,
+    allParticipants
+WHERE
+    athlete.athleteId IN (
+        SELECT
+            athleteId
+        FROM
+            participant
+    )
 GROUP BY
     athlete.sex,
-    result.medalId;
+    allParticipant.totalParticipantCount
+
+-- Selecionar a porcentagem de ganhadores de medalha por gênero
+WITH
+    minimumResult AS (
+        SELECT
+            result.athleteId,
+            MIN(result.medalId) medalId
+        FROM
+            result
+        GROUP BY
+            athleteId
+    )
+SELECT
+    athlete.sex sex,
+    COUNT(minimumResult.medalId) medalWinnersCount,
+    ROUND(
+        (COUNT(minimumResult.medalId) * 100.0) / COUNT(*),
+        2
+    ) medalWinnersPercentage
+FROM
+    athlete
+    NATURAL LEFT JOIN minimumResult
+WHERE
+    athlete.athleteId IN (
+        SELECT
+            athleteId
+        FROM
+            participant
+    )
+GROUP BY
+    athlete.sex
 
 -- Selecionar a porcentagem de medalhas de cada tipo por gênero
 SELECT
@@ -251,7 +267,7 @@ SELECT
     medal.name,
     COUNT(result.medalId) AS medalCount,
     ROUND(
-        (COUNT(result.medalId) * 100.0) / NULLIF(total.medalCount, 0),
+        (COUNT(result.medalId) * 100.0) / total.medalCount,
         2
     ) AS medalPercentage
 FROM
@@ -265,14 +281,10 @@ FROM
         FROM
             athlete
             JOIN result ON athlete.athleteId = result.athleteId
-        WHERE
-            result.medalId IS NOT NULL
         GROUP BY
             athlete.sex
     ) AS total ON athlete.sex = total.sex
-WHERE
-    result.medalId IS NOT NULL
 GROUP BY
     athlete.sex,
-    medal.name,
-    total.medalCount;
+    medal.name;
+    
