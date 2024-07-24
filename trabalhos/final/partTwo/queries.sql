@@ -10,23 +10,6 @@ FROM
 WHERE
     edition.year >= 2010;
 
--- Selecionar o nome de atletas que apenas participaram em olimpíadas a partir do ano 2000
-SELECT
-    name
-FROM
-    athlete
-WHERE
-    athleteId NOT IN (
-        SELECT
-            athleteId
-        FROM
-            athlete
-            NATURAL JOIN participant
-            NATURAL JOIN edition
-        WHERE
-            edition.year < 2000
-    );
-
 -- Selecionar atletas que ganharam medalha em 2016
 SELECT DISTINCT
     name
