@@ -88,7 +88,7 @@ FROM
     athlete
     NATURAL JOIN participant
 GROUP BY
-    athlete.name
+    athlete.athleteId
 HAVING
     sportCount > 1
 ORDER BY
