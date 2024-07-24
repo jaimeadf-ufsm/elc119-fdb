@@ -228,7 +228,7 @@ WHERE
     )
 GROUP BY
     athlete.sex,
-    allParticipant.totalParticipantCount
+    allParticipants.totalParticipantCount;
 
 -- Selecionar a porcentagem de ganhadores de medalha por gênero
 WITH
@@ -243,11 +243,11 @@ WITH
     )
 SELECT
     athlete.sex sex,
-    COUNT(minimumResult.medalId) medalWinnersCount,
+    COUNT(minimumResult.medalId) medalWinnerCount,
     ROUND(
         (COUNT(minimumResult.medalId) * 100.0) / COUNT(*),
         2
-    ) medalWinnersPercentage
+    ) medalWinnerPercentage
 FROM
     athlete
     NATURAL LEFT JOIN minimumResult
@@ -259,7 +259,7 @@ WHERE
             participant
     )
 GROUP BY
-    athlete.sex
+    athlete.sex;
 
 -- Selecionar a porcentagem de medalhas de cada tipo por gênero
 SELECT
